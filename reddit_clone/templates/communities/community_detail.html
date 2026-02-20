@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ community.title }}</h1>
+<p>
+    <strong>
+        <a href="{% url 'communities:detail' name=community.name %}">c/{{ community.name }}</a>
+    </strong>
+</p>
+<p>{{ community.description|linebreaks }}</p>
+
+<p>Created by: {{ community.created_by.username }} | {{ community.created_at }}</p>
+{% endblock %}

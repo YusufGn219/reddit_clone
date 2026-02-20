@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Create Community</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create</button>
+</form>
+
+<p>
+    Name kuralları: küçük harf, boşluk yok (boşluklar - olur), TR harfler normalize edilir.
+</p>
+{% endblock %}
