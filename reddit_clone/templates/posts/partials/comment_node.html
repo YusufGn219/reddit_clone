@@ -1,0 +1,26 @@
+<div class="comment level-{{ depth }}">
+
+    <div class="comment-meta">
+        <strong>{{ node.author.username }}</strong>
+        <small>{{ node.created_at|date:"d M Y H:i" }}</small>
+    </div>
+
+    {% if node.is_deleted %}
+    <em class="deleted">(silindi)</em>
+    {% else %}
+    <p class="comment-body">{{ node.body }}</p>
+    {% endif %}
+
+    {% if user.is_authenticated and not node.is_deleted %}
+    <form class="reply-form" method="post" action="{% url 'posts:reply_create' post.id node.id %}">
+        {% csrf_token %}
+        <textarea name="body" rows="2" placeholder="Yanıt yaz..."></textarea>
+        <button type="submit">Yanıtla</button>
+    </form>
+    {% endif %}
+
+    {% for child in node.child_nodes %}
+    {% include "posts/partials/comment_node.html" with node=child post=post depth=depth|add:1 %}
+    {% endfor %}
+
+</div>

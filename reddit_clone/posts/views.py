@@ -1,31 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from .models import Post
-from .forms import PostCreateForm
-from communities.models import Community
+
+from .models import Post, Comment
+from .forms import PostCreateForm, CommentForm
+from .services.comments import build_comment_tree
+
 
 def home(request):
-    return HttpResponse("Home")
+    return render(request, "home.html")
 
-@login_required
-def post_create(request):
-    if request.method == "POST":
-        form = PostCreateForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect("post_detail", post_id =post.id)
-    else:
-        form = PostCreateForm()
-    return render(request, "posts/post_create.html", {"form": form})
-
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id = post_id, is_deleted = False)
-    return render(request, "posts/post_detail.html", {"post": post})
 
 def home_feed(request):
     posts = Post.objects.filter(is_deleted=False).order_by("-created_at")
@@ -35,3 +19,69 @@ def home_feed(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, "posts/home_feed.html", {"page_obj": page_obj})
+
+
+@login_required
+def post_create(request):
+    if request.method == "POST":
+        form = PostCreateForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            # ✅ namespace'li detail
+            return redirect("posts:detail", post_id=post.id)
+    else:
+        form = PostCreateForm()
+
+    return render(request, "posts/post_create.html", {"form": form})
+
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    comment_form = CommentForm()
+    comment_tree = build_comment_tree(post)
+
+    return render(request, "posts/post_detail.html", {
+        "post": post,
+        "comment_form": comment_form,
+        "comment_tree": comment_tree,
+    })
+
+
+@login_required
+def comment_create(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    if request.method != "POST":
+        return redirect("posts:detail", post_id=post.id)
+
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        c = form.save(commit=False)
+        c.author = request.user
+        c.parent = None
+        c.post = post
+        c.save()
+
+    return redirect("posts:detail", post_id=post.id)
+
+
+@login_required
+def reply_create(request, post_id, parent_id):
+    post = get_object_or_404(Post, pk=post_id)
+    parent = get_object_or_404(Comment, pk=parent_id, post=post)
+
+    if request.method != "POST":
+        return redirect("posts:detail", post_id=post.id)
+
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        r = form.save(commit=False)
+        r.author = request.user
+        r.parent = parent
+        r.post = post
+        r.save()
+
+    return redirect("posts:detail", post_id=post.id)

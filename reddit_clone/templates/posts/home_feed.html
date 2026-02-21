@@ -6,7 +6,7 @@
 
 {% for post in page_obj %}
 <div>
-    <a href="{% url 'post_detail' post.id %}">
+    <a href="{% url 'posts:detail' post.id %}">
         <h3>{{ post.title }}</h3>
     </a>
     <small>{{ post.author.username }}</small>

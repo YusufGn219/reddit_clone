@@ -1,9 +1,29 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>POST DETAIL TEMPLATE OK</h1>
 
-<h2>{{ post.title }}</h2>
+<h1>{{ post.title }}</h1>
 <p>{{ post.body }}</p>
-<p>by {{ post.author.username }} in {{ post.community.name }}</p>
+
+<hr>
+
+<h2>Yorumlar</h2>
+
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'posts:comment_create' post.id %}">
+    {% csrf_token %}
+    {{ comment_form.body }}
+    <button type="submit">Yorum Gönder</button>
+</form>
+{% else %}
+<p>Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.</p>
+{% endif %}
+
+<hr>
+
+{% for node in comment_tree %}
+{% include "posts/partials/comment_node.html" with node=node post=post depth=0 %}
+{% empty %}
+<p>Henüz yorum yok.</p>
+{% endfor %}
+
 {% endblock %}

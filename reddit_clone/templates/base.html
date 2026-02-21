@@ -1,16 +1,19 @@
+{% load static %}
 <!doctype html>
 <html lang="tr">
 
 <head>
     <meta charset="utf-8">
     <title>{% block title %}Reddit Clone{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
     <nav style="padding:12px;border-bottom:1px solid #ddd;">
         <a href="/">Home</a>
         <a href="{% url 'communities:create' %}">Create Community</a>
-        <a href="{% url 'post_create' %}">Create Post</a>
+        <a href="{% url 'posts:post_create' %}">Create Post</a>
 
         <span style="margin-left:16px;">
             {% if user.is_authenticated %}

@@ -16,20 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 
-    path("", include("posts.urls")),
+    # Auth
+    path("login/", auth_views.LoginView.as_view(template_name="accounts/login.html"), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+
+    # Apps
+    path("c/", include("communities.urls")),
+    path("", include(("posts.urls", "posts"), namespace="posts")),
     path("", include("accounts.urls")),
 
-    path("login/", auth_views.LoginView.as_view(template_name="accounts/login.html"), name = "login"),
-    path("logout/", auth_views.LogoutView.as_view(), name = "logout"),
-    
+    # Home (en sonda kalsın ki diğerleri override etmesin)
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
-
-    path("c/", include("communities.urls")),
-    path("", include("posts.urls")),
 ]
