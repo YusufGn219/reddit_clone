@@ -1,27 +1,26 @@
+{# templates/posts/home_feed.html #}
 {% extends "base.html" %}
 
 {% block content %}
 <h2>Home Feed</h2>
 
 {% for post in page_obj %}
-<div style="padding:10px;border:1px solid #eee;margin-bottom:8px;">
+<div>
     <a href="{% url 'post_detail' post.id %}">
-        <h3 style="margin:0;">{{ post.title }}</h3>
+        <h3>{{ post.title }}</h3>
     </a>
-    <small>by {{ post.author.username }} in {{ post.community.name }}</small>
+    <small>{{ post.author.username }}</small>
 </div>
 {% empty %}
 <p>No posts yet.</p>
 {% endfor %}
 
-<div style="margin-top:12px;">
+<div>
     {% if page_obj.has_previous %}
     <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
     {% endif %}
 
-    <span style="margin:0 10px;">
-        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-    </span>
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
 
     {% if page_obj.has_next %}
     <a href="?page={{ page_obj.next_page_number }}">Next</a>
