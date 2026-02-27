@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from communities.models import Community
+from django.db.models import Sum
 
 class Post(models.Model):
     community = models.ForeignKey (
@@ -43,3 +44,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment({self.id})"
+
+    @property
+    def score(self):
+        return self.votes.aggregate(s=Sum("value"))["s"] or 0

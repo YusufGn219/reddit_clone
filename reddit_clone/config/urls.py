@@ -30,6 +30,7 @@ urlpatterns = [
     path("c/", include("communities.urls")),
     path("", include(("posts.urls", "posts"), namespace="posts")),
     path("", include("accounts.urls")),
+    path("vote/", include("votes.urls")),
 
     # Home (en sonda kalsın ki diğerleri override etmesin)
     path("", TemplateView.as_view(template_name="home.html"), name="home"),

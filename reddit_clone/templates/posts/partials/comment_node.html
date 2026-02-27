@@ -1,3 +1,5 @@
+{# templates/posts/partials/comment_node.html #}
+
 <div class="comment level-{{ depth }}">
 
     <div class="comment-meta">
@@ -12,11 +14,27 @@
     {% endif %}
 
     {% if user.is_authenticated and not node.is_deleted %}
+
+    <div class="comment-actions" style="margin:6px 0;">
+        <form method="post" action="{% url 'votes:comment' node.id %}" style="display:inline;">
+            {% csrf_token %}
+
+            <button type="submit" name="value" value="up" {% if node.is_upvoted %}
+                style="font-weight:bold; border:2px solid #2e7d32;" {% endif %}>⬆</button>
+
+            <button type="submit" name="value" value="down" {% if node.is_downvoted %}
+                style="font-weight:bold; border:2px solid #c62828;" {% endif %}>⬇</button>
+        </form>
+
+        <span>{{ node.score|default:0 }}</span>
+    </div>
+
     <form class="reply-form" method="post" action="{% url 'posts:reply_create' post.id node.id %}">
         {% csrf_token %}
-        <textarea name="body" rows="2" placeholder="Yanıt yaz..."></textarea>
+        <textarea name="body" rows="2" placeholder="Yanıt yaz..." required></textarea>
         <button type="submit">Yanıtla</button>
     </form>
+
     {% endif %}
 
     {% for child in node.child_nodes %}
