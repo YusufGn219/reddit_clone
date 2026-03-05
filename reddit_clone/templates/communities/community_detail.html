@@ -7,6 +7,37 @@
     </strong>
 </p>
 <p>{{ community.description|linebreaks }}</p>
-
 <p>Created by: {{ community.created_by.username }} | {{ community.created_at }}</p>
+
+<div>
+    <a href="?sort=new">New</a> |
+    <a href="?sort=hot">Hot</a> |
+    <a href="?sort=top&t=day">Top Today</a> |
+    <a href="?sort=top&t=week">Top This Week</a> |
+    <a href="?sort=top&t=month">Top This Month</a> |
+    <a href="?sort=top&t=all">Top All Time</a>
+</div>
+
+{% for post in page_obj %}
+<div>
+    <a href="{% url 'posts:detail' post.id %}">
+        <h3>{{ post.title }}</h3>
+    </a>
+    <small>{{ post.author.username }}</small>
+</div>
+{% empty %}
+<p>Bu toplulukta henüz gönderi yok.</p>
+{% endfor %}
+
+<div>
+    {% if page_obj.has_previous %}
+    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+    {% if page_obj.has_next %}
+    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+</div>
 {% endblock %}

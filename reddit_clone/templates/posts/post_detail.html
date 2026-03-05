@@ -2,6 +2,12 @@
 {% block content %}
 
 <h1>{{ post.title }}</h1>
+<p>
+    <small>
+        <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+        | {{ post.author.username }}
+    </small>
+</p>
 <p>{{ post.body }}</p>
 
 <hr>

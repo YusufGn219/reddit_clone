@@ -8,17 +8,23 @@ from .services.comments import build_comment_tree
 from django.db.models import Sum
 from .services.querysets import with_post_score
 from votes.models import CommentVote
+from .services.sorting import normalize_sort_and_time, apply_sort
 
 
 def home_feed(request):
-    posts = Post.objects.filter(is_deleted=False).order_by("-created_at")
+    sort, t = normalize_sort_and_time(request.GET)
+    qs = Post.objects.filter(is_deleted=False).select_related("community", "author")
+    qs = apply_sort(qs, sort, t)
 
-    paginator = Paginator(posts, 10)
+    paginator = Paginator(qs, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "posts/home_feed.html", {"page_obj": page_obj})
-
+    return render(request, "posts/home_feed.html", {
+        "page_obj": page_obj,
+        "sort": sort,
+        "t": t,
+    })
 
 @login_required
 def post_create(request):

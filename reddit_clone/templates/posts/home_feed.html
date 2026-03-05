@@ -1,8 +1,16 @@
-{# templates/posts/home_feed.html #}
 {% extends "base.html" %}
 
 {% block content %}
 <h2>Home Feed</h2>
+
+<div>
+    <a href="?sort=new">New</a> |
+    <a href="?sort=hot">Hot</a> |
+    <a href="?sort=top&t=day">Top Today</a> |
+    <a href="?sort=top&t=week">Top This Week</a> |
+    <a href="?sort=top&t=month">Top This Month</a> |
+    <a href="?sort=top&t=all">Top All Time</a>
+</div>
 
 {% for post in page_obj %}
 <div>
@@ -17,13 +25,13 @@
 
 <div>
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}">Previous</a>
     {% endif %}
 
     Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
 
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}">Next</a>
     {% endif %}
 </div>
 {% endblock %}
