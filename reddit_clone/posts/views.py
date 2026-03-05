@@ -10,17 +10,6 @@ from .services.querysets import with_post_score
 from votes.models import CommentVote
 
 
-def home(request):
-    qs = Post.objects.select_related("community", "author")
-    qs = with_post_score(qs).order_by("-created_at")  # new default
-
-    paginator = Paginator(qs, 10)  # sayfa başı 10 post
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, "home.html", {"page_obj": page_obj, "posts": page_obj.object_list})
-
-
 def home_feed(request):
     posts = Post.objects.filter(is_deleted=False).order_by("-created_at")
 

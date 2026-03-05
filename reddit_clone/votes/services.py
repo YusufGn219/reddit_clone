@@ -32,3 +32,4 @@ def toggle_comment_vote(*, comment, user, value: int) -> int:
         CommentVote.objects.create(comment=comment, user=user, value=value)
 
     return CommentVote.objects.filter(comment=comment).aggregate(s=Sum("value"))["s"] or 0
+    

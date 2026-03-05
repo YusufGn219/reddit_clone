@@ -9,7 +9,7 @@ _TR_MAP = str.maketrans({
     "ü": "u", "Ü": "u",
 })
 
-_ALLOWED_RE = re.compile(r"[^a-zA-Z0-9_]")
+_ALLOWED_RE = re.compile(r"[^a-zA-Z0-9_-]")
 
 def normalize_community_name(raw: str) -> str:
     if raw is None:
