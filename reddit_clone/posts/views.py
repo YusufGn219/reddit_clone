@@ -12,11 +12,14 @@ from .services.sorting import normalize_sort_and_time, apply_sort
 from communities.permissions import can_moderate
 from django.db.models import Q
 from communities.models import Community
+from django.contrib import messages
+
 
 
 def home_feed(request):
     sort, t = normalize_sort_and_time(request.GET)
     qs = Post.objects.filter(is_deleted=False).select_related("community", "author")
+    qs = with_post_score(qs)
     qs = apply_sort(qs, sort, t)
 
     paginator = Paginator(qs, 10)
@@ -37,7 +40,7 @@ def post_create(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
-            # ✅ namespace'li detail
+            messages.success(request, "Gönderi başarıyla oluşturuldu.")
             return redirect("posts:detail", post_id=post.id)
     else:
         form = PostCreateForm()
@@ -121,6 +124,7 @@ def post_delete(request, post_id):
     if request.method == "POST":
         post.is_deleted = True
         post.save()
+        messages.success(request, "Gönderi başarıyla silindi.")
         return redirect("posts:home_feed")
 
     return redirect("posts:detail", post_id=post.id)
@@ -137,6 +141,7 @@ def comment_delete(request, post_id, comment_id):
     if request.method == "POST":
         comment.is_deleted = True
         comment.save()
+        messages.success(request, "Yorum başarıyla silindi.")
 
     return redirect("posts:detail", post_id=post.id)
 

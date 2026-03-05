@@ -17,10 +17,14 @@
     <a href="{% url 'posts:detail' post.id %}">
         <h3>{{ post.title }}</h3>
     </a>
-    <small>{{ post.author.username }}</small>
+    <small>
+        <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+        | {{ post.author.username }}
+        | Skor: {{ post.score|default:0 }}
+    </small>
 </div>
 {% empty %}
-<p>No posts yet.</p>
+<p>Henüz gönderi yok. İlk gönderini oluştur!</p>
 {% endfor %}
 
 <div>

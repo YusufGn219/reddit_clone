@@ -9,6 +9,7 @@ from .models import Community, CommunityModerator
 from .permissions import can_moderate, is_community_owner
 from posts.models import Post
 from posts.services.sorting import normalize_sort_and_time, apply_sort
+from django.contrib import messages
 
 @login_required
 def community_create(request):
@@ -19,6 +20,7 @@ def community_create(request):
             community.created_by = request.user
             community.save()
             CommunityModerator.objects.create(community=community, user=request.user)
+            messages.success(request, "Topluluk başarıyla oluşturuldu.")
             return redirect("communities:detail", name=community.name)
     else:
         form = CommunityCreateForm()
@@ -55,6 +57,7 @@ def community_edit(request, name):
         form = CommunityEditForm(request.POST, instance=community)
         if form.is_valid():
             form.save()
+            messages.success(request, "Topluluk başarıyla güncellendi.")
             return redirect("communities:detail", name=community.name)
     else:
         form = CommunityEditForm(instance=community)
@@ -78,8 +81,9 @@ def add_moderator(request, name):
         try:
             user = User.objects.get(username=username)
             CommunityModerator.objects.get_or_create(community=community, user=user)
+            messages.success(request, "Moderatör başarıyla eklendi.")
         except User.DoesNotExist:
-            pass
+            messages.error(request, "Kullanıcı bulunamadı.")
         return redirect("communities:detail", name=community.name)
 
     return render(request, "communities/add_moderator.html", {"community": community})

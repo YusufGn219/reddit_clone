@@ -31,6 +31,16 @@
     </nav>
 
     <main style="padding:16px;">
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                {{ message }}
+            </p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </main>
 </body>
