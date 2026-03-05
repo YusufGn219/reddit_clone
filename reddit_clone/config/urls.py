@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+from posts import views as post_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,6 +32,7 @@ urlpatterns = [
     path("", include(("posts.urls", "posts"), namespace="posts")),
     path("", include("accounts.urls")),
     path("vote/", include("votes.urls")),
+    path("search/", post_views.search, name = "search"),
 
     # Home (en sonda kalsın ki diğerleri override etmesin)
     path("", TemplateView.as_view(template_name="home.html"), name="home"),

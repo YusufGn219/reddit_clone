@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>"{{ q }}" için arama sonuçları</h1>
+
+<h2>Gönderiler</h2>
+{% for post in post_results %}
+<div>
+    <a href="{% url 'posts:detail' post.id %}">{{ post.title }}</a>
+    <small>{{ post.author.username }} | c/{{ post.community.name }}</small>
+</div>
+{% empty %}
+<p>Gönderi bulunamadı.</p>
+{% endfor %}
+
+<h2>Topluluklar</h2>
+{% for community in community_results %}
+<div>
+    <a href="{% url 'communities:detail' name=community.name %}">c/{{ community.name }}</a>
+    <small>{{ community.title }}</small>
+</div>
+{% empty %}
+<p>Topluluk bulunamadı.</p>
+{% endfor %}
+
+{% endblock %}

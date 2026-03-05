@@ -10,6 +10,8 @@ from .services.querysets import with_post_score
 from votes.models import CommentVote
 from .services.sorting import normalize_sort_and_time, apply_sort
 from communities.permissions import can_moderate
+from django.db.models import Q
+from communities.models import Community
 
 
 def home_feed(request):
@@ -137,3 +139,25 @@ def comment_delete(request, post_id, comment_id):
         comment.save()
 
     return redirect("posts:detail", post_id=post.id)
+
+def search(request):
+    q = request.GET.get("q", "").strip()
+    post_results = []
+    community_results = []
+
+    if q:
+        post_results = Post.objects.filter(
+            is_deleted=False
+        ).filter(
+            Q(title__icontains=q) | Q(body__icontains=q)
+        ).select_related("community", "author")[:20]
+
+        community_results = Community.objects.filter(
+            Q(name__icontains=q) | Q(title__icontains=q)
+        )[:10]
+
+    return render(request, "search/results.html", {
+        "q": q,
+        "post_results": post_results,
+        "community_results": community_results,
+    })

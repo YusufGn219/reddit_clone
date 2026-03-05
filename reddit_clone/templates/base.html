@@ -5,7 +5,6 @@
 <head>
     <meta charset="utf-8">
     <title>{% block title %}Reddit Clone{% endblock %}</title>
-
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
@@ -14,6 +13,11 @@
         <a href="/">Home</a>
         <a href="{% url 'communities:create' %}">Create Community</a>
         <a href="{% url 'posts:post_create' %}">Create Post</a>
+
+        <form method="get" action="{% url 'search' %}" style="display:inline; margin-left:16px;">
+            <input type="text" name="q" placeholder="Ara..." value="{{ request.GET.q }}">
+            <button type="submit">Ara</button>
+        </form>
 
         <span style="margin-left:16px;">
             {% if user.is_authenticated %}
