@@ -10,6 +10,13 @@
 </p>
 <p>{{ post.body }}</p>
 
+{% if user == post.author or user in post.community.moderators.all %}
+<form method="post" action="{% url 'posts:post_delete' post.id %}">
+    {% csrf_token %}
+    <button type="submit">Sil</button>
+</form>
+{% endif %}
+
 <hr>
 
 <h2>Yorumlar</h2>

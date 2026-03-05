@@ -9,6 +9,13 @@
 <p>{{ community.description|linebreaks }}</p>
 <p>Created by: {{ community.created_by.username }} | {{ community.created_at }}</p>
 
+{% if user == community.created_by or user in community.moderators.all %}
+<a href="{% url 'communities:edit' name=community.name %}">Topluluğu Düzenle</a>
+{% endif %}
+
+{% if user == community.created_by %}
+<a href="{% url 'communities:add_moderator' name=community.name %}">Moderatör Ekle</a>
+{% endif %}
 <div>
     <a href="?sort=new">New</a> |
     <a href="?sort=hot">Hot</a> |

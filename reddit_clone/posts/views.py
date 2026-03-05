@@ -9,6 +9,7 @@ from django.db.models import Sum
 from .services.querysets import with_post_score
 from votes.models import CommentVote
 from .services.sorting import normalize_sort_and_time, apply_sort
+from communities.permissions import can_moderate
 
 
 def home_feed(request):
@@ -104,5 +105,35 @@ def reply_create(request, post_id, parent_id):
         r.parent = parent
         r.post = post
         r.save()
+
+    return redirect("posts:detail", post_id=post.id)
+
+@login_required
+def post_delete(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    if request.user != post.author and not can_moderate(request.user, post.community):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        post.is_deleted = True
+        post.save()
+        return redirect("posts:home_feed")
+
+    return redirect("posts:detail", post_id=post.id)
+
+@login_required
+def comment_delete(request, post_id, comment_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comment = get_object_or_404(Comment, pk=comment_id, post=post)
+
+    if request.user != comment.author and not can_moderate(request.user, post.community):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        comment.is_deleted = True
+        comment.save()
 
     return redirect("posts:detail", post_id=post.id)

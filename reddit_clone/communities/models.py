@@ -17,3 +17,22 @@ class Community(models.Model):
         ordering = ["-created_at"]
     def __str__(self) -> str:
         return f"c/{self.name}"
+
+class CommunityModerator(models.Model):
+    community = models.ForeignKey(
+        Community,
+        on_delete = models.CASCADE,
+        related_name = "moderators"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete = models.CASCADE,
+        related_name = "moderated_communities"
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("community", "user")]
+
+    def __str__(self):
+        return f"{self.user} mod of {self.community}"

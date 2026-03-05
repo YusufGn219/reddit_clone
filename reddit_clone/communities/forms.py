@@ -26,3 +26,9 @@ class CommunityCreateForm(forms.ModelForm):
             raise ValidationError("Bu topluluk adı zaten kullanılıyor.")
 
         return name 
+
+
+class CommunityEditForm(forms.ModelForm):
+    class Meta:
+        model = Community
+        fields = ["title", "description"]

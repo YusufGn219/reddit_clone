@@ -8,7 +8,7 @@
     </div>
 
     {% if node.is_deleted %}
-    <em class="deleted">(silindi)</em>
+    <em class="deleted">[deleted]</em>
     {% else %}
     <p class="comment-body">{{ node.body }}</p>
     {% endif %}
@@ -18,16 +18,20 @@
     <div class="comment-actions" style="margin:6px 0;">
         <form method="post" action="{% url 'votes:comment' node.id %}" style="display:inline;">
             {% csrf_token %}
-
             <button type="submit" name="value" value="up" {% if node.is_upvoted %}
                 style="font-weight:bold; border:2px solid #2e7d32;" {% endif %}>⬆</button>
-
             <button type="submit" name="value" value="down" {% if node.is_downvoted %}
                 style="font-weight:bold; border:2px solid #c62828;" {% endif %}>⬇</button>
         </form>
-
         <span>{{ node.score|default:0 }}</span>
     </div>
+
+    {% if user == node.author or user in post.community.moderators.all %}
+    <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}">
+        {% csrf_token %}
+        <button type="submit">Sil</button>
+    </form>
+    {% endif %}
 
     <form class="reply-form" method="post" action="{% url 'posts:reply_create' post.id node.id %}">
         {% csrf_token %}
