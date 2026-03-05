@@ -30,7 +30,6 @@ def vote_post(request, post_id):
 @login_required
 @require_POST
 def vote_comment(request, comment_id):
-    print("VOTE_COMMENT HIT:", comment_id, request.user, request.POST)
     comment = get_object_or_404(Comment, id=comment_id)
     value = _parse_value(request.POST.get("value"))
     if value is None:
