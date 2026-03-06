@@ -1,10 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h1>u/{{ profile_user.username }}</h1>
+<p>Karma: {{ profile_user.karma }}</p>
+
 
 {% if profile_user.email %}
 <p>Email: {{ profile_user.email }}</p>
 {% endif %}
 
-<p>Profil sayfası hazır. Post listesi Sprint 3’te buraya gelecek.</p>
+<!-- Tab Navigasyonu -->
+<div style="margin: 20px 0;">
+    {% if tab == "posts" %}
+    <strong>Postlar</strong>
+    {% else %}
+    <a href="?tab=posts">Postlar</a>
+    {% endif %}
+    &nbsp;|&nbsp;
+    {% if tab == "comments" %}
+    <strong>Yorumlar</strong>
+    {% else %}
+    <a href="?tab=comments">Yorumlar</a>
+    {% endif %}
+</div>
+
+<!-- İçerik -->
+{% if tab == "posts" %}
+{% for post in items %}
+<div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
+    <a href="{% url 'posts:detail' post.id %}">{{ post.title }}</a>
+    <small> — r/{{ post.community.name }} — {{ post.created_at|date:"d M Y" }}</small>
+</div>
+{% empty %}
+<p>Henüz post yok.</p>
+{% endfor %}
+
+{% else %}
+{% for comment in items %}
+<div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
+    <a href="{% url 'posts:detail' comment.post.id %}">{{ comment.post.title }}</a>
+    <p>{{ comment.body }}</p>
+    <small>{{ comment.created_at|date:"d M Y" }}</small>
+</div>
+{% empty %}
+<p>Henüz yorum yok.</p>
+{% endfor %}
+{% endif %}
+
 {% endblock %}

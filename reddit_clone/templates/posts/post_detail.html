@@ -1,6 +1,6 @@
 {% extends "base.html" %}
+{% load markdown_extras %}
 {% block content %}
-
 <h1>{{ post.title }}</h1>
 <p>
     <small>
@@ -8,7 +8,18 @@
         | {{ post.author.username }}
     </small>
 </p>
-<p>{{ post.body }}</p>
+<p>{{ post.body|markdownify }}</p>
+
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'posts:save_post' post.id %}">
+    {% csrf_token %}
+    {% if is_saved %}
+    <button type="submit">💾 Kaydedildi (Kaldır)</button>
+    {% else %}
+    <button type="submit">🔖 Kaydet</button>
+    {% endif %}
+</form>
+{% endif %}
 
 {% if user == post.author or user in post.community.moderators.all %}
 <form method="post" action="{% url 'posts:post_delete' post.id %}">

@@ -36,3 +36,19 @@ class CommunityModerator(models.Model):
 
     def __str__(self):
         return f"{self.user} mod of {self.community}"
+
+class CommunityRule(models.Model):
+    community = models.ForeignKey(
+        Community,
+        on_delete=models.CASCADE,
+        related_name="rules"
+    )
+    title= models.CharField(max_length=100)
+    description = models.TextField(blank = True)
+    order = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.community.name} - {self.title}"

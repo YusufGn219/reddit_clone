@@ -47,4 +47,30 @@
     <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}">Next</a>
     {% endif %}
 </div>
+
+<hr>
+<h3>Topluluk Kuralları</h3>
+
+{% if community.rules.all %}
+{% for rule in community.rules.all %}
+<div style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc;">
+    <strong>{{ forloop.counter }}. {{ rule.title }}</strong>
+    {% if rule.description %}
+    <p style="margin: 4px 0 0 0;">{{ rule.description }}</p>
+    {% endif %}
+    {% if user == community.created_by or user in community.moderators.all %}
+    <form method="post" action="{% url 'communities:rule_delete' community.name rule.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Sil</button>
+    </form>
+    {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p>Henüz kural eklenmemiş.</p>
+{% endif %}
+
+{% if user == community.created_by or user in community.moderators.all %}
+<a href="{% url 'communities:rule_add' community.name %}">+ Kural Ekle</a>
+{% endif %}
 {% endblock %}

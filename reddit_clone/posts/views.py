@@ -1,8 +1,9 @@
+from posts.models import SavedPost
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
-from .models import Post, Comment
+from .models import Post, Comment, SavedPost
 from .forms import PostCreateForm, CommentForm
 from .services.comments import build_comment_tree
 from django.db.models import Sum
@@ -13,6 +14,7 @@ from communities.permissions import can_moderate
 from django.db.models import Q
 from communities.models import Community
 from django.contrib import messages
+from accounts.models import Notification
 
 
 
@@ -54,7 +56,11 @@ def post_detail(request, post_id):
     comment_form = CommentForm()
     comment_tree = build_comment_tree(post)
 
+    is_saved = False
+
     if request.user.is_authenticated:
+        is_saved = SavedPost.objects.filter(user=request.user, post=post).exists()
+
         vote_map = dict(
             CommentVote.objects
             .filter(user=request.user, comment__post=post)
@@ -74,6 +80,7 @@ def post_detail(request, post_id):
         "post": post,
         "comment_form": comment_form,
         "comment_tree": comment_tree,
+        "is_saved": is_saved,
     })
 
 
@@ -110,6 +117,13 @@ def reply_create(request, post_id, parent_id):
         r.parent = parent
         r.post = post
         r.save()
+
+    if parent.author != request.user:
+        Notification.objects.create(
+            user=parent.author,
+            type=Notification.REPLY,
+            comment=r
+        )
 
     return redirect("posts:detail", post_id=post.id)
 
@@ -166,3 +180,15 @@ def search(request):
         "post_results": post_results,
         "community_results": community_results,
     })
+
+@login_required
+def save_post(request, post_id):
+    post = get_object_or_404(Post, pk =post_id)
+    saved = SavedPost.objects.filter(user=request.user, post=post)
+
+    if saved.exists():
+        saved.delete()
+    else: 
+        SavedPost.objects.create(user=request.user, post=post)
+
+    return redirect("posts:detail", post_id=post.id)

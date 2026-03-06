@@ -12,4 +12,5 @@ urlpatterns = [
     path("p/<int:post_id>/reply/<int:parent_id>/", views.reply_create, name="reply_create"),
     path("p/<int:post_id>/delete/", views.post_delete, name="post_delete"),
     path("p/<int:post_id>/comment/<int:comment_id>/delete/", views.comment_delete, name="comment_delete"),
+    path("p/<int:post_id>/save/", views.save_post, name="save_post"),
 ]

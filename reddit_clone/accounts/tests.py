@@ -48,7 +48,7 @@ class RegisterViewTest(TestCase):
     def test_register_page_loads(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        
+
     def setUp(self):
         self.client = Client()
         self.url = reverse("register")
