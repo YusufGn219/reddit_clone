@@ -3,20 +3,52 @@
 {% block content %}
 
 <div class="profile-header">
+    {% if profile_user.profile.avatar %}
+    <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}" class="profile-avatar"
+        style="object-fit:cover;">
+    {% else %}
     <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
+    {% endif %}
+
     <div class="profile-info">
         <h1>u/{{ profile_user.username }}</h1>
         <span class="karma-badge">✦ {{ profile_user.karma }} karma</span>
+
         {% if profile_user.email and user == profile_user %}
-        <p style="font-size:13px; color:var(--muted); margin-top:6px;">{{ profile_user.email }}</p>
+        <p style="font-size:13px; color:var(--muted); margin-top:6px;">
+            {{ profile_user.email }}
+        </p>
+        {% endif %}
+
+        {% if user == profile_user %}
+        <div style="margin-top:10px;">
+            <a href="{% url 'accounts:avatar_edit' %}" class="btn btn-outline"
+                style="font-size:13px; padding:6px 12px;">
+                Profil resmini düzenle
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>
 
 <div class="tab-nav">
-    {% if tab == "posts" %}<strong>Postlar</strong>{% else %}<a href="?tab=posts">Postlar</a>{% endif %}
-    {% if tab == "comments" %}<strong>Yorumlar</strong>{% else %}<a href="?tab=comments">Yorumlar</a>{% endif %}
-    {% if tab == "saved" %}<strong>Kaydedilenler</strong>{% else %}<a href="?tab=saved">Kaydedilenler</a>{% endif %}
+    {% if tab == "posts" %}
+    <strong>Postlar</strong>
+    {% else %}
+    <a href="?tab=posts">Postlar</a>
+    {% endif %}
+
+    {% if tab == "comments" %}
+    <strong>Yorumlar</strong>
+    {% else %}
+    <a href="?tab=comments">Yorumlar</a>
+    {% endif %}
+
+    {% if tab == "saved" %}
+    <strong>Kaydedilenler</strong>
+    {% else %}
+    <a href="?tab=saved">Kaydedilenler</a>
+    {% endif %}
 </div>
 
 {% if tab == "posts" %}
@@ -24,7 +56,9 @@
 <div class="post-card">
     <div class="post-body">
         <div class="post-meta">
-            <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+            <a href="{% url 'communities:detail' name=post.community.name %}">
+                c/{{ post.community.name }}
+            </a>
             &nbsp;·&nbsp; {{ post.created_at|date:"d M Y" }}
         </div>
         <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
@@ -44,7 +78,9 @@
             <a href="{% url 'posts:detail' comment.post.id %}">{{ comment.post.title }}</a>
             &nbsp;·&nbsp; {{ comment.created_at|date:"d M Y" }}
         </div>
-        <p style="font-size:14px; color:#333; margin-top:6px;">{{ comment.body|truncatechars:200 }}</p>
+        <p style="font-size:14px; color:#333; margin-top:6px;">
+            {{ comment.body|truncatechars:200 }}
+        </p>
     </div>
 </div>
 {% empty %}
@@ -58,11 +94,14 @@
 <div class="post-card">
     <div class="post-body">
         <div class="post-meta">
-            <a href="{% url 'communities:detail' name=saved.post.community.name %}">c/{{ saved.post.community.name
-                }}</a>
+            <a href="{% url 'communities:detail' name=saved.post.community.name %}">
+                c/{{ saved.post.community.name }}
+            </a>
             &nbsp;·&nbsp; {{ saved.saved_at|date:"d M Y" }}
         </div>
-        <a href="{% url 'posts:detail' saved.post.id %}" class="post-title">{{ saved.post.title }}</a>
+        <a href="{% url 'posts:detail' saved.post.id %}" class="post-title">
+            {{ saved.post.title }}
+        </a>
     </div>
 </div>
 {% empty %}

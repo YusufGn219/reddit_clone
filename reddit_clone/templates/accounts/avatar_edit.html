@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Profil Resmi Güncelle — LordAhkam{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width:520px;">
+    <h1>Profil Resmi Güncelle</h1>
+
+    <form method="post" enctype="multipart/form-data" style="margin-top:16px;">
+        {% csrf_token %}
+
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:14px; font-weight:600; margin-bottom:8px;">
+                Profil resmi seç
+            </label>
+            {{ form.avatar }}
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a href="{% url 'accounts:profile' username=request.user.username %}" class="btn btn-outline">İptal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

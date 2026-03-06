@@ -1,17 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Moderatör Ekle — Reddat{% endblock %}
+
 {% block content %}
-<div class="form-card">
-    <h1>{{ community.title }} — Moderatör Ekle</h1>
+<div class="form-card" style="max-width:560px;">
+    <h1>{{ community.title }} — Moderatörler</h1>
+
+    <!-- Mevcut moderatörler -->
+    <div style="margin-bottom:24px;">
+        <h3
+            style="font-size:14px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); margin-bottom:10px; font-family:'DM Sans',sans-serif;">
+            Mevcut Moderatörler
+        </h3>
+
+        {% for mod in current_mods %}
+        <div
+            style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); gap:12px;">
+
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-size:14px; font-weight:500;">u/{{ mod.user.username }}</span>
+                <span style="font-size:12px; color:var(--muted);">{{ mod.added_at|date:"d M Y" }}</span>
+            </div>
+
+            <form method="post"
+                action="{% url 'communities:remove_moderator' name=community.name user_id=mod.user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline" style="font-size:12px; padding:4px 12px;">
+                    Sil
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        <p style="font-size:13px; color:var(--muted);">Henüz moderatör yok.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Kullanıcı ara -->
+    <h3
+        style="font-size:14px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); margin-bottom:10px; font-family:'DM Sans',sans-serif;">
+        Kullanıcı Ara
+    </h3>
+
     <form method="post">
         {% csrf_token %}
-        <label style="font-size:14px; font-weight:500; display:block; margin-bottom:6px;">Kullanıcı Adı</label>
-        <input type="text" name="username" placeholder="Kullanıcı adı" required
-            style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); outline:none; margin-bottom:14px;">
-        <div style="display:flex; gap:10px;">
-            <button type="submit" class="btn btn-primary">Moderatör Yap</button>
-            <a href="{% url 'communities:detail' name=community.name %}" class="btn btn-outline">İptal</a>
+        <input type="hidden" name="action" value="search">
+
+        <div style="display:flex; gap:8px;">
+            <input type="text" name="username" value="{{ query }}" placeholder="Kullanıcı adı ara..."
+                style="flex:1; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); outline:none;">
+            <button type="submit" class="btn btn-primary">Ara</button>
         </div>
     </form>
+
+    <!-- Kullanıcı listesi / arama sonuçları -->
+    <div style="margin-top:12px;">
+        {% if search_results %}
+        <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+            {% for user in search_results %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="username" value="{{ user.username }}">
+
+                <div
+                    style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border);">
+                    <span style="font-size:14px; font-weight:500;">u/{{ user.username }}</span>
+                    <button type="submit" class="btn btn-outline" style="font-size:12px; padding:4px 12px;">
+                        + Ekle
+                    </button>
+                </div>
+            </form>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:13px; color:var(--muted); margin-top:8px;">
+            Gösterilecek kullanıcı bulunamadı.
+        </p>
+        {% endif %}
+    </div>
+
+    <div style="margin-top:20px;">
+        <a href="{% url 'communities:detail' name=community.name %}" class="btn btn-outline">← Geri</a>
+    </div>
 </div>
 {% endblock %}

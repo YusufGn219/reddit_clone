@@ -1,21 +1,61 @@
 {% load static %}
+
 <!doctype html>
+
 <html lang="tr">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Reddat{% endblock %}</title>
+    <title>{% block title %}LordAhkam{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
 
+
     <nav class="navbar">
         <a href="/" class="navbar-brand">Lord<span>Ahkam</span></a>
 
         <a href="{% url 'communities:create' %}" class="navbar-link">+ Topluluk</a>
+        <div class="navbar-dropdown">
+
+            <button class="navbar-link">Topluluklar ▾</button>
+
+            <div class="dropdown-menu">
+
+                <a href="/" class="dropdown-section">🏠 Home</a>
+
+                <hr>
+
+                <div class="dropdown-title">📚 Communities</div>
+
+                {% for c in navbar_communities %}
+                <a href="{% url 'communities:detail' name=c.name %}">
+                    c/{{ c.name }}
+                </a>
+                {% empty %}
+                <span class="dropdown-empty">Topluluk yok</span>
+                {% endfor %}
+
+                <hr>
+
+                <div class="dropdown-title">🛡 Moderating</div>
+
+                {% for c in navbar_moderating %}
+                <a href="{% url 'communities:detail' name=c.name %}">
+                    c/{{ c.name }}
+                </a>
+                {% empty %}
+                <span class="dropdown-empty">Mod olduğun topluluk yok</span>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
         <a href="{% url 'posts:post_create' %}" class="navbar-link">+ Post</a>
+
 
         <div class="navbar-spacer"></div>
 
@@ -25,22 +65,32 @@
         </form>
 
         {% if user.is_authenticated %}
-        <a href="{% url 'notifications' %}" class="navbar-notif" title="Bildirimler">
-            🔔
+
+        <a href="{% url 'accounts:notifications' %}" class="navbar-notif" title="Bildirimler">🔔
             {% if unread_notifications %}
             <span class="notif-badge">{{ unread_notifications }}</span>
             {% endif %}
         </a>
-        <a href="{% url 'profile' user.username %}" class="navbar-link"
-            style="font-weight:600; color:var(--text) !important;">u/{{ user.username }}</a>
+
+        <a href="{% url 'accounts:profile' username=user.username %}" class="navbar-link"
+            style="font-weight:600; color:var(--text) !important;">
+            u/{{ user.username }}
+        </a>
+
         <a href="{% url 'logout' %}" class="navbar-link">Çıkış</a>
+
         {% else %}
+
         <a href="{% url 'login' %}" class="navbar-link">Giriş</a>
-        <a href="{% url 'register' %}" class="btn btn-primary" style="font-size:13px; padding:6px 14px;">Kayıt Ol</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary" style="font-size:13px; padding:6px 14px;">
+            Kayıt Ol
+        </a>
+
         {% endif %}
     </nav>
 
     <div style="max-width:1100px; margin:0 auto; padding:24px 20px;">
+
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
@@ -50,7 +100,9 @@
         {% endif %}
 
         {% block content %}{% endblock %}
+
     </div>
+
 
 </body>
 

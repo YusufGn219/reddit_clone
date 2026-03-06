@@ -8,6 +8,9 @@ from .models import User
 from posts.models import Post, Comment
 from .models import Notification
 
+from .forms import ProfileAvatarForm
+from .models import Profile
+
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -52,4 +55,21 @@ def notifications_view(request):
 
     return render(request, "accounts/notifications.html", {
         "notifications": notifications,
+    })
+
+@login_required
+def avatar_edit(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileAvatarForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil resmi güncellendi.")
+            return redirect("accounts:profile", username=request.user.username)
+    else:
+        form = ProfileAvatarForm(instance=profile)
+
+    return render(request, "accounts/avatar_edit.html", {
+        "form": form,
     })
