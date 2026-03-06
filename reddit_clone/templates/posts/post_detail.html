@@ -1,53 +1,91 @@
 {% extends "base.html" %}
 {% load markdown_extras %}
+{% block title %}{{ post.title }} — Reddat{% endblock %}
 {% block content %}
-<h1>{{ post.title }}</h1>
-<p>
-    <small>
-        <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
-        | {{ post.author.username }}
-    </small>
-</p>
-<p>{{ post.body|markdownify }}</p>
 
-{% if user.is_authenticated %}
-<form method="post" action="{% url 'posts:save_post' post.id %}">
-    {% csrf_token %}
-    {% if is_saved %}
-    <button type="submit">💾 Kaydedildi (Kaldır)</button>
-    {% else %}
-    <button type="submit">🔖 Kaydet</button>
-    {% endif %}
-</form>
-{% endif %}
+<div class="page-wrap">
+    <div class="main-col">
 
-{% if user == post.author or user in post.community.moderators.all %}
-<form method="post" action="{% url 'posts:post_delete' post.id %}">
-    {% csrf_token %}
-    <button type="submit">Sil</button>
-</form>
-{% endif %}
+        <div class="post-detail-card">
+            <div class="post-detail-header">
+                <div class="post-meta">
+                    <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+                    &nbsp;·&nbsp; u/{{ post.author.username }}
+                    &nbsp;·&nbsp; {{ post.created_at|date:"d M Y" }}
+                </div>
+                <h1 class="post-detail-title">{{ post.title }}</h1>
+            </div>
 
-<hr>
+            {% if post.body %}
+            <div class="post-detail-body">
+                {{ post.body|markdownify }}
+            </div>
+            {% endif %}
 
-<h2>Yorumlar</h2>
+            <div class="post-detail-actions">
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'posts:save_post' post.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    {% if is_saved %}
+                    <button type="submit" class="btn btn-save">💾 Kaydedildi</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-ghost">🔖 Kaydet</button>
+                    {% endif %}
+                </form>
+                {% endif %}
 
-{% if user.is_authenticated %}
-<form method="post" action="{% url 'posts:comment_create' post.id %}">
-    {% csrf_token %}
-    {{ comment_form.body }}
-    <button type="submit">Yorum Gönder</button>
-</form>
-{% else %}
-<p>Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.</p>
-{% endif %}
+                {% if user == post.author or user in post.community.moderators.all %}
+                <form method="post" action="{% url 'posts:post_delete' post.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">🗑 Sil</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
 
-<hr>
+        <div class="comments-section">
+            <h2 style="font-size:18px; margin-bottom:14px;">Yorumlar</h2>
 
-{% for node in comment_tree %}
-{% include "posts/partials/comment_node.html" with node=node post=post depth=0 %}
-{% empty %}
-<p>Henüz yorum yok.</p>
-{% endfor %}
+            {% if user.is_authenticated %}
+            <div class="comment-form-wrap">
+                <form method="post" action="{% url 'posts:comment_create' post.id %}">
+                    {% csrf_token %}
+                    {{ comment_form.body }}
+                    <div style="margin-top:8px; display:flex; justify-content:flex-end;">
+                        <button type="submit" class="btn btn-primary">Yorum Gönder</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <p style="font-size:14px; color:var(--muted); margin-bottom:16px;">
+                Yorum yazmak için <a href="{% url 'login' %}">giriş yap</a>.
+            </p>
+            {% endif %}
+
+            {% for node in comment_tree %}
+            {% include "posts/partials/comment_node.html" with node=node post=post depth=0 %}
+            {% empty %}
+            <div class="empty-state">
+                <p>Henüz yorum yok. İlk yorumu sen yap!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    <div class="side-col">
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <h3>c/{{ post.community.name }}</h3>
+            </div>
+            <div class="sidebar-card-body">
+                <p style="font-size:14px; color:var(--muted);">{{ post.community.description|truncatechars:120 }}</p>
+                <div style="margin-top:12px;">
+                    <a href="{% url 'communities:detail' name=post.community.name %}" class="btn btn-outline"
+                        style="width:100%; justify-content:center;">Topluluğa Git</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

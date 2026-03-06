@@ -35,5 +35,5 @@ urlpatterns = [
     path("search/", post_views.search, name = "search"),
 
     # Home (en sonda kalsın ki diğerleri override etmesin)
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
+    path("", post_views.home_feed, name="home"),
 ]

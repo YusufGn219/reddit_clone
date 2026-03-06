@@ -1,25 +1,3 @@
-<h1>Home</h1>
-
-{% for post in posts %}
-<div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
-    <div><b>{{ post.title }}</b></div>
-    <div>Community: {{ post.community.name }}</div>
-    <div>Author: {{ post.author.username }}</div>
-    <div>Score: {{ post.score }}</div>
-    <a href="{% url 'posts:detail' post.id %}">Detail</a>
-</div>
-{% empty %}
-<p>Henüz post yok.</p>
-{% endfor %}
-
-<div style="margin-top:16px;">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Prev</a>
-    {% endif %}
-
-    <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-    {% endif %}
-</div>
+{% extends "base.html" %}
+{% block content %}
+{% endblock %}

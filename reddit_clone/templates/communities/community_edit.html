@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% block title %}Topluluğu Düzenle — Reddat{% endblock %}
 {% block content %}
-
-<h1>{{ community.title }} — Düzenle</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Kaydet</button>
-</form>
-
-<a href="{% url 'communities:detail' name=community.name %}">İptal</a>
-
+<div class="form-card">
+    <h1>{{ community.title }} — Düzenle</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div style="display:flex; gap:10px; margin-top:4px;">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a href="{% url 'communities:detail' name=community.name %}" class="btn btn-outline">İptal</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

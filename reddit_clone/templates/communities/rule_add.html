@@ -1,20 +1,21 @@
 {% extends "base.html" %}
+{% block title %}Kural Ekle — Reddat{% endblock %}
 {% block content %}
-
-<h1>c/{{ community.name }} — Kural Ekle</h1>
-
-<form method="post">
-    {% csrf_token %}
-    <div>
-        <label>Başlık</label><br>
-        <input type="text" name="title" maxlength="100" required>
-    </div>
-    <div>
-        <label>Açıklama</label><br>
-        <textarea name="description" rows="3"></textarea>
-    </div>
-    <button type="submit">Ekle</button>
-    <a href="{% url 'communities:detail' community.name %}">İptal</a>
-</form>
-
+<div class="form-card">
+    <h1>c/{{ community.name }} — Kural Ekle</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label style="font-size:14px; font-weight:500; display:block; margin-bottom:6px;">Başlık</label>
+        <input type="text" name="title" maxlength="100" required
+            style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); outline:none; margin-bottom:14px;">
+        <label style="font-size:14px; font-weight:500; display:block; margin-bottom:6px;">Açıklama <span
+                style="color:var(--muted); font-weight:400;">(opsiyonel)</span></label>
+        <textarea name="description" rows="3"
+            style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); outline:none; resize:vertical; margin-bottom:14px;"></textarea>
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">Ekle</button>
+            <a href="{% url 'communities:detail' community.name %}" class="btn btn-outline">İptal</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

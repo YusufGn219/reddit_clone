@@ -1,18 +1,28 @@
 {% extends "base.html" %}
+{% block title %}Bildirimler — Reddat{% endblock %}
 {% block content %}
 
-<h1>Bildirimler</h1>
+<div style="max-width:680px; margin:0 auto;">
+    <h1 style="font-size:26px; margin-bottom:20px;">Bildirimler</h1>
 
-{% for notification in notifications %}
-<div style="padding: 10px; margin-bottom: 10px; border: 1px solid #ccc;">
-    <a href="{% url 'posts:detail' notification.comment.post.id %}">
-        <strong>{{ notification.comment.author.username }}</strong>
-        yorumuna reply yazdı: "{{ notification.comment.body|truncatechars:60 }}"
-    </a>
-    <small style="display:block; color:#888;">{{ notification.created_at|date:"d M Y H:i" }}</small>
+    <div class="sidebar-card" style="max-width:100%;">
+        {% for notification in notifications %}
+        <a href="{% url 'posts:detail' notification.comment.post.id %}" class="notif-item">
+            <div class="notif-icon">💬</div>
+            <div>
+                <div class="notif-text">
+                    <strong>{{ notification.comment.author.username }}</strong>
+                    yorumuna yanıt yazdı: "{{ notification.comment.body|truncatechars:80 }}"
+                </div>
+                <div class="notif-time">{{ notification.created_at|date:"d M Y H:i" }}</div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="empty-state">
+            <p>Henüz bildirim yok.</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-{% empty %}
-<p>Henüz bildirim yok.</p>
-{% endfor %}
 
 {% endblock %}

@@ -1,12 +1,14 @@
 {% extends "base.html" %}
+{% block title %}Giriş Yap — Reddat{% endblock %}
 {% block content %}
-<h1>Login</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Giriş Yap</button>
-</form>
-
-<p>Hesabın yok mu? <a href="{% url 'register' %}">Register</a></p>
+<div class="form-card">
+    <h1>Giriş Yap</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:10px;">Giriş
+            Yap</button>
+    </form>
+    <p style="margin-top:16px; text-align:center;">Hesabın yok mu? <a href="{% url 'register' %}">Kayıt Ol</a></p>
+</div>
 {% endblock %}

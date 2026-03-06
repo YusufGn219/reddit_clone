@@ -1,10 +1,7 @@
-{# templates/posts/partials/comment_node.html #}
-
 <div class="comment level-{{ depth }}">
-
     <div class="comment-meta">
         <strong>{{ node.author.username }}</strong>
-        <small>{{ node.created_at|date:"d M Y H:i" }}</small>
+        <span>{{ node.created_at|date:"d M Y H:i" }}</span>
     </div>
 
     {% if node.is_deleted %}
@@ -14,35 +11,37 @@
     {% endif %}
 
     {% if user.is_authenticated and not node.is_deleted %}
-
-    <div class="comment-actions" style="margin:6px 0;">
-        <form method="post" action="{% url 'votes:comment' node.id %}" style="display:inline;">
+    <div class="comment-actions">
+        <form method="post" action="{% url 'votes:comment' node.id %}"
+            style="display:flex; align-items:center; gap:4px;">
             {% csrf_token %}
-            <button type="submit" name="value" value="up" {% if node.is_upvoted %}
-                style="font-weight:bold; border:2px solid #2e7d32;" {% endif %}>⬆</button>
-            <button type="submit" name="value" value="down" {% if node.is_downvoted %}
-                style="font-weight:bold; border:2px solid #c62828;" {% endif %}>⬇</button>
+            <button type="submit" name="value" value="up"
+                class="vote-btn {% if node.is_upvoted %}upvoted{% endif %}">▲</button>
+            <span class="score-display">{{ node.score|default:0 }}</span>
+            <button type="submit" name="value" value="down"
+                class="vote-btn {% if node.is_downvoted %}downvoted{% endif %}">▼</button>
         </form>
-        <span>{{ node.score|default:0 }}</span>
+
+        {% if user == node.author or user in post.community.moderators.all %}
+        <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="padding:3px 8px; font-size:11px;">Sil</button>
+        </form>
+        {% endif %}
     </div>
 
-    {% if user == node.author or user in post.community.moderators.all %}
-    <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}">
-        {% csrf_token %}
-        <button type="submit">Sil</button>
-    </form>
-    {% endif %}
-
-    <form class="reply-form" method="post" action="{% url 'posts:reply_create' post.id node.id %}">
-        {% csrf_token %}
-        <textarea name="body" rows="2" placeholder="Yanıt yaz..." required></textarea>
-        <button type="submit">Yanıtla</button>
-    </form>
-
+    <div class="reply-form">
+        <form method="post" action="{% url 'posts:reply_create' post.id node.id %}">
+            {% csrf_token %}
+            <textarea name="body" rows="2" placeholder="Yanıt yaz..." required></textarea>
+            <div style="margin-top:6px;">
+                <button type="submit" class="btn btn-ghost" style="font-size:12px; padding:4px 10px;">Yanıtla</button>
+            </div>
+        </form>
+    </div>
     {% endif %}
 
     {% for child in node.child_nodes %}
     {% include "posts/partials/comment_node.html" with node=child post=post depth=depth|add:1 %}
     {% endfor %}
-
 </div>

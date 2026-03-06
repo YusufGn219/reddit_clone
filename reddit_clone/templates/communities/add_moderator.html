@@ -1,14 +1,17 @@
 {% extends "base.html" %}
+{% block title %}Moderatör Ekle — Reddat{% endblock %}
 {% block content %}
-
-<h1>{{ community.title }} — Moderatör Ekle</h1>
-
-<form method="post">
-    {% csrf_token %}
-    <input type="text" name="username" placeholder="Kullanıcı adı" required>
-    <button type="submit">Moderatör Yap</button>
-</form>
-
-<a href="{% url 'communities:detail' name=community.name %}">İptal</a>
-
+<div class="form-card">
+    <h1>{{ community.title }} — Moderatör Ekle</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label style="font-size:14px; font-weight:500; display:block; margin-bottom:6px;">Kullanıcı Adı</label>
+        <input type="text" name="username" placeholder="Kullanıcı adı" required
+            style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); outline:none; margin-bottom:14px;">
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">Moderatör Yap</button>
+            <a href="{% url 'communities:detail' name=community.name %}" class="btn btn-outline">İptal</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

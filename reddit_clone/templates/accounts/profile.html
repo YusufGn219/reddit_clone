@@ -1,49 +1,74 @@
 {% extends "base.html" %}
+{% block title %}u/{{ profile_user.username }} — Reddat{% endblock %}
 {% block content %}
 
-<h1>u/{{ profile_user.username }}</h1>
-<p>Karma: {{ profile_user.karma }}</p>
-
-
-{% if profile_user.email %}
-<p>Email: {{ profile_user.email }}</p>
-{% endif %}
-
-<!-- Tab Navigasyonu -->
-<div style="margin: 20px 0;">
-    {% if tab == "posts" %}
-    <strong>Postlar</strong>
-    {% else %}
-    <a href="?tab=posts">Postlar</a>
-    {% endif %}
-    &nbsp;|&nbsp;
-    {% if tab == "comments" %}
-    <strong>Yorumlar</strong>
-    {% else %}
-    <a href="?tab=comments">Yorumlar</a>
-    {% endif %}
+<div class="profile-header">
+    <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
+    <div class="profile-info">
+        <h1>u/{{ profile_user.username }}</h1>
+        <span class="karma-badge">✦ {{ profile_user.karma }} karma</span>
+        {% if profile_user.email and user == profile_user %}
+        <p style="font-size:13px; color:var(--muted); margin-top:6px;">{{ profile_user.email }}</p>
+        {% endif %}
+    </div>
 </div>
 
-<!-- İçerik -->
+<div class="tab-nav">
+    {% if tab == "posts" %}<strong>Postlar</strong>{% else %}<a href="?tab=posts">Postlar</a>{% endif %}
+    {% if tab == "comments" %}<strong>Yorumlar</strong>{% else %}<a href="?tab=comments">Yorumlar</a>{% endif %}
+    {% if tab == "saved" %}<strong>Kaydedilenler</strong>{% else %}<a href="?tab=saved">Kaydedilenler</a>{% endif %}
+</div>
+
 {% if tab == "posts" %}
 {% for post in items %}
-<div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
-    <a href="{% url 'posts:detail' post.id %}">{{ post.title }}</a>
-    <small> — r/{{ post.community.name }} — {{ post.created_at|date:"d M Y" }}</small>
+<div class="post-card">
+    <div class="post-body">
+        <div class="post-meta">
+            <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+            &nbsp;·&nbsp; {{ post.created_at|date:"d M Y" }}
+        </div>
+        <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
+    </div>
 </div>
 {% empty %}
-<p>Henüz post yok.</p>
+<div class="empty-state">
+    <p>Henüz post yok.</p>
+</div>
 {% endfor %}
 
-{% else %}
+{% elif tab == "comments" %}
 {% for comment in items %}
-<div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
-    <a href="{% url 'posts:detail' comment.post.id %}">{{ comment.post.title }}</a>
-    <p>{{ comment.body }}</p>
-    <small>{{ comment.created_at|date:"d M Y" }}</small>
+<div class="post-card">
+    <div class="post-body">
+        <div class="post-meta">
+            <a href="{% url 'posts:detail' comment.post.id %}">{{ comment.post.title }}</a>
+            &nbsp;·&nbsp; {{ comment.created_at|date:"d M Y" }}
+        </div>
+        <p style="font-size:14px; color:#333; margin-top:6px;">{{ comment.body|truncatechars:200 }}</p>
+    </div>
 </div>
 {% empty %}
-<p>Henüz yorum yok.</p>
+<div class="empty-state">
+    <p>Henüz yorum yok.</p>
+</div>
+{% endfor %}
+
+{% elif tab == "saved" %}
+{% for saved in items %}
+<div class="post-card">
+    <div class="post-body">
+        <div class="post-meta">
+            <a href="{% url 'communities:detail' name=saved.post.community.name %}">c/{{ saved.post.community.name
+                }}</a>
+            &nbsp;·&nbsp; {{ saved.saved_at|date:"d M Y" }}
+        </div>
+        <a href="{% url 'posts:detail' saved.post.id %}" class="post-title">{{ saved.post.title }}</a>
+    </div>
+</div>
+{% empty %}
+<div class="empty-state">
+    <p>Henüz kaydedilen post yok.</p>
+</div>
 {% endfor %}
 {% endif %}
 

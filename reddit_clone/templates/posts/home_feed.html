@@ -1,41 +1,86 @@
 {% extends "base.html" %}
-
+{% block title %}Reddat — Ana Sayfa{% endblock %}
 {% block content %}
-<h2>Home Feed</h2>
 
-<div>
-    <a href="?sort=new">New</a> |
-    <a href="?sort=hot">Hot</a> |
-    <a href="?sort=top&t=day">Top Today</a> |
-    <a href="?sort=top&t=week">Top This Week</a> |
-    <a href="?sort=top&t=month">Top This Month</a> |
-    <a href="?sort=top&t=all">Top All Time</a>
+<div class="page-wrap">
+    <div class="main-col">
+
+        <div class="sort-bar">
+            {% if sort == 'hot' %}
+            <a href="?sort=hot" class="active">🔥 Hot</a>
+            {% else %}
+            <a href="?sort=hot">🔥 Hot</a>
+            {% endif %}
+            {% if sort == 'new' %}
+            <a href="?sort=new" class="active">✨ New</a>
+            {% else %}
+            <a href="?sort=new">✨ New</a>
+            {% endif %}
+            {% if sort == 'top' and t == 'day' %}
+            <a href="?sort=top&t=day" class="active">📅 Bugün</a>
+            {% else %}
+            <a href="?sort=top&t=day">📅 Bugün</a>
+            {% endif %}
+            {% if sort == 'top' and t == 'week' %}
+            <a href="?sort=top&t=week" class="active">📆 Hafta</a>
+            {% else %}
+            <a href="?sort=top&t=week">📆 Hafta</a>
+            {% endif %}
+            {% if sort == 'top' and t == 'all' %}
+            <a href="?sort=top&t=all" class="active">🏆 Tüm</a>
+            {% else %}
+            <a href="?sort=top&t=all">🏆 Tüm</a>
+            {% endif %}
+        </div>
+
+        {% for post in page_obj %}
+        <div class="post-card">
+            <div class="post-vote">
+                <span class="score">{{ post.score|default:0 }}</span>
+            </div>
+            <div class="post-body">
+                <div class="post-meta">
+                    <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+                    &nbsp;·&nbsp; u/{{ post.author.username }}
+                </div>
+                <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Henüz gönderi yok. <a href="{% url 'posts:post_create' %}">İlk gönderini oluştur!</a></p>
+        </div>
+        {% endfor %}
+
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline">←
+                Önceki</a>
+            {% endif %}
+            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}" class="btn btn-outline">Sonraki
+                →</a>
+            {% endif %}
+        </div>
+
+    </div>
+    <div class="side-col">
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <h3>Reddat Hakkında</h3>
+            </div>
+            <div class="sidebar-card-body" style="font-size:14px; color:var(--muted); line-height:1.6;">
+                <p>Topluluklar oluştur, post paylaş, oy ver ve tartış.</p>
+                <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+                    <a href="{% url 'posts:post_create' %}" class="btn btn-primary" style="justify-content:center;">+
+                        Yeni Post</a>
+                    <a href="{% url 'communities:create' %}" class="btn btn-outline" style="justify-content:center;">+
+                        Topluluk Oluştur</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-{% for post in page_obj %}
-<div>
-    <a href="{% url 'posts:detail' post.id %}">
-        <h3>{{ post.title }}</h3>
-    </a>
-    <small>
-        <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
-        | {{ post.author.username }}
-        | Skor: {{ post.score|default:0 }}
-    </small>
-</div>
-{% empty %}
-<p>Henüz gönderi yok. İlk gönderini oluştur!</p>
-{% endfor %}
-
-<div>
-    {% if page_obj.has_previous %}
-    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}">Previous</a>
-    {% endif %}
-
-    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-
-    {% if page_obj.has_next %}
-    <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}">Next</a>
-    {% endif %}
-</div>
 {% endblock %}

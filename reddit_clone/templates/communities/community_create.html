@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% block title %}Topluluk Oluştur — Reddat{% endblock %}
 {% block content %}
-<h1>Create Community</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create</button>
-</form>
-
-<p>
-    Name kuralları: küçük harf, boşluk yok (boşluklar - olur), TR harfler normalize edilir.
-</p>
+<div class="form-card">
+    <h1>Topluluk Oluştur</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary"
+            style="width:100%; justify-content:center; padding:10px;">Oluştur</button>
+    </form>
+    <p style="margin-top:12px; font-size:12px; color:var(--muted);">İsim kuralları: küçük harf, boşluk yok, TR harfler
+        normalize edilir.</p>
+</div>
 {% endblock %}
