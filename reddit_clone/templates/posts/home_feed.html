@@ -36,12 +36,28 @@
         {% for post in page_obj %}
         <div class="post-card">
             <div class="post-vote">
-                <span class="score">{{ post.score|default:0 }}</span>
+                {% if user.is_authenticated %}
+                <form class="vote-form" data-url="{% url 'votes:post' post.id %}">
+                    {% csrf_token %}
+                    <button type="button" class="vote-btn {% if post.user_vote == 1 %}upvoted{% endif %}"
+                        data-value="up">▲</button>
+                    <span class="score-display">{{ post.score|default:0 }}</span>
+                    <button type="button" class="vote-btn {% if post.user_vote == -1 %}downvoted{% endif %}"
+                        data-value="down">▼</button>
+                </form>
+                {% else %}
+                <div class="vote-form">
+                    <a href="{% url 'login' %}" class="vote-btn">▲</a>
+                    <span class="score-display">{{ post.score|default:0 }}</span>
+                    <a href="{% url 'login' %}" class="vote-btn">▼</a>
+                </div>
+                {% endif %}
             </div>
             <div class="post-body">
                 <div class="post-meta">
                     <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
                     &nbsp;·&nbsp; u/{{ post.author.username }}
+                    &nbsp;·&nbsp; {{ post.created_at|timesince }} önce
                 </div>
                 <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
             </div>

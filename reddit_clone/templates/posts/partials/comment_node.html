@@ -1,7 +1,7 @@
 <div class="comment level-{{ depth }}">
     <div class="comment-meta">
         <strong>{{ node.author.username }}</strong>
-        <span>{{ node.created_at|date:"d M Y H:i" }}</span>
+        <span>{{ node.created_at|timesince }} önce</span>
     </div>
 
     {% if node.is_deleted %}
@@ -12,14 +12,12 @@
 
     {% if user.is_authenticated and not node.is_deleted %}
     <div class="comment-actions">
-        <form method="post" action="{% url 'votes:comment' node.id %}"
-            style="display:flex; align-items:center; gap:4px;">
+        <form class="vote-form" data-url="{% url 'votes:comment' node.id %}">
             {% csrf_token %}
-            <button type="submit" name="value" value="up"
-                class="vote-btn {% if node.is_upvoted %}upvoted{% endif %}">▲</button>
+            <button type="button" class="vote-btn {% if node.is_upvoted %}upvoted{% endif %}" data-value="up">▲</button>
             <span class="score-display">{{ node.score|default:0 }}</span>
-            <button type="submit" name="value" value="down"
-                class="vote-btn {% if node.is_downvoted %}downvoted{% endif %}">▼</button>
+            <button type="button" class="vote-btn {% if node.is_downvoted %}downvoted{% endif %}"
+                data-value="down">▼</button>
         </form>
 
         {% if user == node.author or user in post.community.moderators.all %}
