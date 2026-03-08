@@ -8,115 +8,281 @@
         <div class="community-banner">
             <div
                 style="font-size:12px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-family:'DM Sans',sans-serif; text-transform:uppercase; letter-spacing:0.08em;">
-                Topluluk</div>
-            <h1>{{ community.title }}</h1>
-            <div class="community-name">c/{{ community.name }} · {{ community.created_at|date:"M Y" }}</div>
-        </div>
+                Topluluk
+            </div>
 
-        <div class="community-info">
-            <p style="font-size:14px; color:var(--muted); margin-bottom:12px;">{{ community.description }}</p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                {% if user == community.created_by or user in community.moderators.all %}
-                <a href="{% url 'communities:edit' name=community.name %}" class="btn btn-outline"
-                    style="font-size:12px;">⚙ Düzenle</a>
-                {% endif %}
-                {% if user == community.created_by %}
-                <a href="{% url 'communities:add_moderator' name=community.name %}" class="btn btn-outline"
-                    style="font-size:12px;">👤 Mod Ekle</a>
-                {% endif %}
+            <h1>{{ community.title }}</h1>
+
+            <div class="community-name">
+                c/{{ community.name }} · {{ community.created_at|date:"M Y" }}
             </div>
         </div>
 
+
+        <div class="community-info">
+
+            <p style="font-size:14px; color:var(--muted); margin-bottom:12px;">
+                {{ community.description }}
+            </p>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+                {% if user == community.created_by or user in community.moderators.all %}
+                <a href="{% url 'communities:edit' name=community.name %}" class="btn btn-outline"
+                    style="font-size:12px;">
+                    ⚙ Düzenle
+                </a>
+                {% endif %}
+
+                {% if user == community.created_by %}
+                <a href="{% url 'communities:add_moderator' name=community.name %}" class="btn btn-outline"
+                    style="font-size:12px;">
+                    👤 Mod Ekle
+                </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
         <div class="sort-bar">
+
             {% if sort == 'hot' %}
             <a href="?sort=hot" class="active">🔥 Hot</a>
             {% else %}
             <a href="?sort=hot">🔥 Hot</a>
             {% endif %}
+
             {% if sort == 'new' %}
             <a href="?sort=new" class="active">✨ New</a>
             {% else %}
             <a href="?sort=new">✨ New</a>
             {% endif %}
+
             {% if sort == 'top' and t == 'day' %}
             <a href="?sort=top&t=day" class="active">📅 Bugün</a>
             {% else %}
             <a href="?sort=top&t=day">📅 Bugün</a>
             {% endif %}
+
             {% if sort == 'top' and t == 'week' %}
             <a href="?sort=top&t=week" class="active">📆 Hafta</a>
             {% else %}
             <a href="?sort=top&t=week">📆 Hafta</a>
             {% endif %}
+
             {% if sort == 'top' and t == 'all' %}
             <a href="?sort=top&t=all" class="active">🏆 Tüm</a>
             {% else %}
             <a href="?sort=top&t=all">🏆 Tüm</a>
             {% endif %}
+
         </div>
+
+
         {% for post in page_obj %}
+
         <div class="post-card">
+
             <div class="post-vote">
                 <span class="score">{{ post.score|default:0 }}</span>
             </div>
+
             <div class="post-body">
-                <div class="post-meta">u/{{ post.author.username }} · {{ post.created_at|date:"d M Y" }}</div>
-                <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
+
+                <div class="post-meta">
+
+                    u/{{ post.author.username }} · {{ post.created_at|timesince }} önce
+
+                    {% if user == community.created_by or user in community.moderators.all %}
+                    {% if post.author != user %}
+
+                    <form method="post" action="{% url 'communities:ban_user' community.name post.author.id %}"
+                        style="display:inline;">
+
+                        {% csrf_token %}
+                        <input type="hidden" name="reason" value="">
+
+                        <button type="submit" class="btn btn-danger" style="font-size:11px; padding:2px 7px;">
+                            Ban
+                        </button>
+
+                    </form>
+
+                    {% endif %}
+                    {% endif %}
+
+                </div>
+
+                <a href="{% url 'posts:detail' post.id %}" class="post-title">
+                    {{ post.title }}
+                </a>
+
             </div>
+
         </div>
+
         {% empty %}
+
         <div class="empty-state">
             <p>Bu toplulukta henüz gönderi yok.</p>
         </div>
+
         {% endfor %}
 
+
         <div class="pagination">
+
             {% if page_obj.has_previous %}
-            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline">←
-                Önceki</a>
+            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline">
+                ← Önceki
+            </a>
             {% endif %}
+
             <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
             {% if page_obj.has_next %}
-            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}" class="btn btn-outline">Sonraki
-                →</a>
+            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}" class="btn btn-outline">
+                Sonraki →
+            </a>
             {% endif %}
+
         </div>
 
     </div>
+
+
+
     <div class="side-col">
+
+
         <div class="sidebar-card">
+
             <div class="sidebar-card-header">
                 <h3>Topluluk Kuralları</h3>
             </div>
+
             <div class="sidebar-card-body" style="padding:0 16px;">
-                {% if community.rules.all %}
+
+                {% if community.rules.exists %}
+
                 {% for rule in community.rules.all %}
+
                 <div class="rule-item">
-                    <span class="rule-number">{{ forloop.counter }}</span>
+
+                    <span class="rule-number">
+                        {{ forloop.counter }}
+                    </span>
+
                     <div class="rule-content">
-                        <div class="rule-title">{{ rule.title }}</div>
-                        {% if rule.description %}<div class="rule-desc">{{ rule.description }}</div>{% endif %}
+
+                        <div class="rule-title">
+                            {{ rule.title }}
+                        </div>
+
+                        {% if rule.description %}
+                        <div class="rule-desc">
+                            {{ rule.description }}
+                        </div>
+                        {% endif %}
+
                     </div>
+
+
                     {% if user == community.created_by or user in community.moderators.all %}
+
                     <form method="post" action="{% url 'communities:rule_delete' community.name rule.id %}">
+
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger" style="padding:2px 7px; font-size:11px;">✕</button>
+
+                        <button type="submit" class="btn btn-danger" style="padding:2px 7px; font-size:11px;">
+                            ✕
+                        </button>
+
                     </form>
+
                     {% endif %}
+
                 </div>
+
                 {% endfor %}
+
                 {% else %}
-                <p style="font-size:13px; color:var(--muted); padding:10px 0;">Henüz kural eklenmemiş.</p>
+
+                <p style="font-size:13px; color:var(--muted); padding:10px 0;">
+                    Henüz kural eklenmemiş.
+                </p>
+
                 {% endif %}
+
             </div>
+
+
             {% if user == community.created_by or user in community.moderators.all %}
+
             <div style="padding:12px 16px; border-top:1px solid var(--border);">
+
                 <a href="{% url 'communities:rule_add' community.name %}" class="btn btn-outline"
-                    style="width:100%; justify-content:center; font-size:13px;">+ Kural Ekle</a>
+                    style="width:100%; justify-content:center; font-size:13px;">
+
+                    + Kural Ekle
+
+                </a>
+
             </div>
+
             {% endif %}
+
         </div>
+
+
+
+        {% if user == community.created_by or user in community.moderators.all %}
+
+        <div class="sidebar-card" style="margin-top:12px;">
+
+            <div class="sidebar-card-header">
+                <h3>Banlı Kullanıcılar</h3>
+            </div>
+
+            <div class="sidebar-card-body" style="padding:0 16px;">
+
+                {% for ban in community.bans.all %}
+
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px;">
+
+                    <span>u/{{ ban.user.username }}</span>
+
+                    <form method="post" action="{% url 'communities:unban_user' community.name ban.user.id %}">
+
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn btn-outline" style="font-size:11px; padding:2px 8px;">
+                            Banı Kaldır
+                        </button>
+
+                    </form>
+
+                </div>
+
+                {% empty %}
+
+                <p style="font-size:13px; color:var(--muted); padding:10px 0;">
+                    Banlı kullanıcı yok.
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
     </div>
+
 </div>
 
 {% endblock %}

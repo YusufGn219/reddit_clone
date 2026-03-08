@@ -52,3 +52,16 @@ class CommunityRule(models.Model):
 
     def __str__(self):
         return f"{self.community.name} - {self.title}"
+
+class BannedUser(models.Model):
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name="bans")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="bans")
+    banned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="issued_bans")
+    reason = models.TextField(blank=True)
+    banned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("community", "user")]
+
+    def __str__(self):
+        return f"{self.user} banned from {self.community}"

@@ -17,7 +17,7 @@ from django.contrib import messages
 from accounts.models import Notification
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-
+from communities.models import BannedUser
 
 
 
@@ -41,6 +41,10 @@ def home_feed(request):
 def post_create(request):
     if request.method == "POST":
         form = PostCreateForm(request.POST)
+        community = form.cleaned_data.get("community")
+        if community and BannedUser.objects.filter(community=community, user=request.user).exists():
+            messages.error(request, "Bu toplulukta banlısınız.")
+            return render(request, "posts/post_create.html", {"form": form})
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -100,6 +104,9 @@ def comment_create(request, post_id):
         c.author = request.user
         c.parent = None
         c.post = post
+        if BannedUser.objects.filter(community=post.community, user=request.user).exists():
+            messages.error(request, "Bu toplulukta banlısınız.")
+            return redirect("posts:detail", post_id=post.id)
         c.save()
 
     return redirect("posts:detail", post_id=post.id)
@@ -119,6 +126,9 @@ def reply_create(request, post_id, parent_id):
         r.author = request.user
         r.parent = parent
         r.post = post
+        if BannedUser.objects.filter(community=post.community, user=request.user).exists():
+            messages.error(request, "Bu toplulukta banlısınız.")
+            return redirect("posts:detail", post_id=post.id)
         r.save()
 
     if parent.author != request.user:

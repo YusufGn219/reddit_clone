@@ -33,7 +33,8 @@ cd reddit-clone
 ```bash
 python -m venv venv
 Set-ExecutionPolicy Unrestricted -Scope Process
-python.exe -m venv venv
+cd reddit_clone
+ .\venv\Scripts\activate
 ```
 
 3. Gerekli paketleri yükleyin:

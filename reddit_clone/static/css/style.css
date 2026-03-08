@@ -8,8 +8,8 @@
     --accent-lt: #fde8e0;
     --text: #1a1a18;
     --muted: #888074;
-    --upvote: #d4460a;
-    --downvote: #5c6ac4;
+    --upvote: #0ad41b;
+    --downvote: #ff0000;
     --radius: 8px;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -973,8 +973,8 @@ h3 {
     --accent-lt: #fde8e0;
     --text: #1a1a18;
     --muted: #888074;
-    --upvote: #d4460a;
-    --downvote: #5c6ac4;
+    --upvote: #00ff00;
+    --downvote: #ff0000;
     --radius: 8px;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }

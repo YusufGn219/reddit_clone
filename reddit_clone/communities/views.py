@@ -6,11 +6,12 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 
 from .forms import CommunityCreateForm, CommunityEditForm
-from .models import Community, CommunityModerator, CommunityRule
+from .models import Community, CommunityModerator, CommunityRule, BannedUser
 from .permissions import can_moderate, is_community_owner
 
 from posts.models import Post
 from posts.services.sorting import normalize_sort_and_time, apply_sort
+
 
 
 @login_required
@@ -218,5 +219,45 @@ def rule_delete(request, name, rule_id):
     if request.method == "POST":
         rule.delete()
         messages.success(request, "Kural başarıyla silindi.")
+
+    return redirect("communities:detail", name=community.name)
+
+@login_required
+def ban_user(request, name, user_id):
+    community = get_object_or_404(Community, name=name)
+    if not can_moderate(request.user, community):
+        return HttpResponseForbidden()
+
+    User = get_user_model()
+    user = get_object_or_404(User, id=user_id)
+
+    if user == community.created_by:
+        messages.error(request, "Topluluk sahibi banlanamaz.")
+        return redirect("communities:detail", name=community.name)
+
+    if request.method == "POST":
+        reason = request.POST.get("reason", "").strip()
+        _, created = BannedUser.objects.get_or_create(
+            community=community,
+            user=user,
+            defaults={"banned_by": request.user, "reason": reason}
+        )
+        if created:
+            messages.success(request, f"{user.username} banlandı.")
+        else:
+            messages.error(request, f"{user.username} zaten banlı.")
+
+    return redirect("communities:detail", name=community.name)
+
+
+@login_required
+def unban_user(request, name, user_id):
+    community = get_object_or_404(Community, name=name)
+    if not can_moderate(request.user, community):
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        BannedUser.objects.filter(community=community, user_id=user_id).delete()
+        messages.success(request, "Ban kaldırıldı.")
 
     return redirect("communities:detail", name=community.name)

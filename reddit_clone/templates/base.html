@@ -17,7 +17,6 @@
     <nav class="navbar">
         <a href="/" class="navbar-brand">Lord<span>Ahkam</span></a>
 
-        <a href="{% url 'communities:create' %}" class="navbar-link">+ Topluluk</a>
         <div class="navbar-dropdown">
 
             <button class="navbar-link">Topluluklar ▾</button>
@@ -53,6 +52,9 @@
             </div>
 
         </div>
+
+        <a href="{% url 'communities:create' %}" class="navbar-link">+ Topluluk</a>
+
 
         <a href="{% url 'posts:post_create' %}" class="navbar-link">+ Post</a>
 
