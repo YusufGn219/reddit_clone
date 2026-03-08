@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Reddat — Ana Sayfa{% endblock %}
+{% block title %}LordAhkam — Ana Sayfa{% endblock %}
 {% block content %}
 
 <div class="page-wrap">
@@ -58,6 +58,11 @@
                     <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
                     &nbsp;·&nbsp; u/{{ post.author.username }}
                     &nbsp;·&nbsp; {{ post.created_at|timesince }} önce
+                    {% if post.post_type == "image" %}
+                    <span style="font-size:11px; color:var(--muted);">🖼 Resim</span>
+                    {% elif post.post_type == "link" %}
+                    <span style="font-size:11px; color:var(--muted);">🔗 Link</span>
+                    {% endif %}
                 </div>
                 <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
             </div>

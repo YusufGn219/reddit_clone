@@ -1,13 +1,141 @@
 {% extends "base.html" %}
-{% block title %}Yeni Post — Reddat{% endblock %}
+
+{% block title %}Yeni Post — LordAhkam{% endblock %}
+
 {% block content %}
+
 <div class="form-card" style="max-width:640px;">
     <h1>Yeni Post Oluştur</h1>
-    <p style="margin-bottom:20px;">Markdown desteklenir — **kalın**, *italik*, # başlık</p>
-    <form method="post">
+
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary" style="padding:10px 24px;">Paylaş</button>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+                Topluluk
+            </label>
+            {{ form.community }}
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+                Başlık
+            </label>
+            {{ form.title }}
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px;">
+                Post Tipi
+            </label>
+
+            <div style="display:flex;gap:8px;">
+
+                <label class="type-btn" id="type-text">
+                    <input type="radio" name="post_type" value="text" checked style="display:none;">
+                    📝 Metin
+                </label>
+
+                <label class="type-btn" id="type-image">
+                    <input type="radio" name="post_type" value="image" style="display:none;">
+                    🖼 Resim
+                </label>
+
+                <label class="type-btn" id="type-link">
+                    <input type="radio" name="post_type" value="link" style="display:none;">
+                    🔗 Link
+                </label>
+
+            </div>
+        </div>
+
+        <div id="field-text" style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+                Metin
+                <span style="font-weight:400;color:var(--muted);">(Markdown desteklenir)</span>
+            </label>
+            {{ form.body }}
+        </div>
+
+        <div id="field-image" style="margin-bottom:16px;display:none;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+                Resim
+            </label>
+            {{ form.image }}
+        </div>
+
+        <div id="field-link" style="margin-bottom:16px;display:none;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">
+                URL
+            </label>
+            {{ form.url }}
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:10px 24px;">
+            Paylaş
+        </button>
+
     </form>
+
 </div>
+
+<style>
+    .type-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        transition: all .15s;
+    }
+
+    .type-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(255, 69, 0, .06);
+    }
+</style>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const radios = document.querySelectorAll('input[name="post_type"]')
+
+        const fields = {
+            text: document.getElementById("field-text"),
+            image: document.getElementById("field-image"),
+            link: document.getElementById("field-link")
+        }
+
+        const typeBtns = {
+            text: document.getElementById("type-text"),
+            image: document.getElementById("type-image"),
+            link: document.getElementById("type-link")
+        }
+
+        function switchType(val) {
+
+            Object.keys(fields).forEach(k => {
+                fields[k].style.display = (k === val) ? "block" : "none"
+                typeBtns[k].classList.toggle("active", k === val)
+            })
+
+        }
+
+        radios.forEach(r => {
+            r.addEventListener("change", () => switchType(r.value))
+        })
+
+        switchType("text")
+
+    })
+
+</script>
+
 {% endblock %}

@@ -40,12 +40,12 @@ def home_feed(request):
 @login_required
 def post_create(request):
     if request.method == "POST":
-        form = PostCreateForm(request.POST)
-        community = form.cleaned_data.get("community")
-        if community and BannedUser.objects.filter(community=community, user=request.user).exists():
-            messages.error(request, "Bu toplulukta banlısınız.")
-            return render(request, "posts/post_create.html", {"form": form})
+        form = PostCreateForm(request.POST, request.FILES)
         if form.is_valid():
+            community = form.cleaned_data.get("community")
+            if community and BannedUser.objects.filter(community=community, user=request.user).exists():
+                messages.error(request, "Bu toplulukta banlısınız.")
+                return render(request, "posts/post_create.html", {"form": form})
             post = form.save(commit=False)
             post.author = request.user
             post.save()
@@ -53,7 +53,6 @@ def post_create(request):
             return redirect("posts:detail", post_id=post.id)
     else:
         form = PostCreateForm()
-
     return render(request, "posts/post_create.html", {"form": form})
 
 

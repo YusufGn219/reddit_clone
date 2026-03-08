@@ -20,6 +20,15 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
 
+    class PostType(models.TextChoices):
+        TEXT = "text", "Metin"
+        IMAGE = "image", "Resim"
+        LINK = "link", "Link"
+    
+    post_type = models.CharField(max_length=10, choices=PostType.choices, default=PostType.TEXT)
+    image = models.ImageField(upload_to="posts/", blank=True, null=True)
+    url = models.URLField(blank=True)
+    
     def __str__(self):
         return f"{self.title} - {self.author.username}"
 
