@@ -8,7 +8,7 @@ from .models import User
 from posts.models import Post, Comment, SavedPost
 from .models import Notification
 
-from .forms import ProfileAvatarForm
+from .forms import ProfileAvatarForm, ProfileEditForm, RegisterForm
 from .models import Profile
 
 
@@ -85,5 +85,21 @@ def avatar_edit(request):
         form = ProfileAvatarForm(instance=profile)
 
     return render(request, "accounts/avatar_edit.html", {
+        "form": form,
+    })
+
+@login_required
+def profile_edit(request):
+    profile, _ = Profile.objects.get_or_create(user = request.user)
+    if request.method == "POST":
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil güncellendi.")
+            return redirect("accounts:profile", username=request.user.username)
+    else:
+        form = ProfileEditForm(instance=profile)
+
+    return render(request, "accounts/profile_edit.html", {
         "form": form,
     })

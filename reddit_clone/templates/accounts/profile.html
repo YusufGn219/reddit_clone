@@ -19,12 +19,18 @@
             {{ profile_user.email }}
         </p>
         {% endif %}
+        {% if profile_user.profile.display_name %}
+        <p style="font-size:16px; font-weight:600;">{{ profile_user.profile.display_name }}</p>
+        {% endif %}
+        {% if profile_user.profile.bio %}
+        <p style="font-size:14px; color:var(--muted); margin-top:6px;">{{ profile_user.profile.bio }}</p>
+        {% endif %}
 
         {% if user == profile_user %}
         <div style="margin-top:10px;">
-            <a href="{% url 'accounts:avatar_edit' %}" class="btn btn-outline"
+            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline"
                 style="font-size:13px; padding:6px 12px;">
-                Profil resmini düzenle
+                Profili Düzenle
             </a>
         </div>
         {% endif %}

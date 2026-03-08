@@ -58,8 +58,6 @@ python manage.py runserver
 
 6. Tarayıcınızda http://localhost:8000 adresine gidin.
 
-
-
 ## Modüllerin Görevleri
 
 Her klasör belirli bir sorumluluk alanına odaklanır ve projenin bakımını, geliştirilmesini ve ölçeklenmesini kolaylaştırır.

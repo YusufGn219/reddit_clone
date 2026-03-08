@@ -11,4 +11,9 @@ class RegisterForm(UserCreationForm):
 class ProfileAvatarForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["avatar"]
+        fields = ["avatar", "bio", "display_name"]
+
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["display_name", "bio", "avatar"]

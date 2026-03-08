@@ -31,6 +31,8 @@ class Profile(models.Model):
         blank=True,
         null=True
     )
+    bio = models.TextField(max_length=500, blank=True)
+    display_name = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return f"{self.user.username} profile"
