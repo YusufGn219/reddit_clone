@@ -5,11 +5,12 @@ from django.contrib import messages
 
 from .forms import RegisterForm
 from .models import User
-from posts.models import Post, Comment
+from posts.models import Post, Comment, SavedPost
 from .models import Notification
 
 from .forms import ProfileAvatarForm
 from .models import Profile
+
 
 def register_view(request):
     if request.method == "POST":
@@ -23,15 +24,26 @@ def register_view(request):
         form = RegisterForm()
     return render(request, "accounts/register.html", {"form": form})
 
+
 def profile_view(request, username: str):
     user_obj = get_object_or_404(User, username=username)
-    tab = request.GET.get("tab", "posts")  # default: posts sekmesi
+    tab = request.GET.get("tab", "posts")
 
     if tab == "comments":
         items = Comment.objects.filter(
             author=user_obj,
             is_deleted=False
         ).select_related("post").order_by("-created_at")
+
+    elif tab == "saved":
+        if request.user.is_authenticated and request.user == user_obj:
+            items = SavedPost.objects.filter(
+                user=user_obj,
+                post__is_deleted=False  # silinmiş postları gösterme
+            ).select_related("post__community").order_by("-saved_at")
+        else:
+            items = SavedPost.objects.none()
+
     else:
         tab = "posts"
         items = Post.objects.filter(
@@ -45,17 +57,19 @@ def profile_view(request, username: str):
         "tab": tab,
     })
 
+
 @login_required
 def notifications_view(request):
     notifications = Notification.objects.filter(
-        user = request.user
+        user=request.user
     ).select_related("comment__post", "comment__author")
 
-    notifications.filter(is_read=False).update(is_read=True) # bildirimleri okundu olarak güncelle.
+    notifications.filter(is_read=False).update(is_read=True)
 
     return render(request, "accounts/notifications.html", {
         "notifications": notifications,
     })
+
 
 @login_required
 def avatar_edit(request):

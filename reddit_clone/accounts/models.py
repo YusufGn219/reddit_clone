@@ -60,3 +60,4 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user} - {self.type}"
+        

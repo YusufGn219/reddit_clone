@@ -15,6 +15,9 @@ from django.db.models import Q
 from communities.models import Community
 from django.contrib import messages
 from accounts.models import Notification
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
 
 
 
@@ -183,12 +186,11 @@ def search(request):
 
 @login_required
 def save_post(request, post_id):
-    post = get_object_or_404(Post, pk =post_id)
-    saved = SavedPost.objects.filter(user=request.user, post=post)
-
-    if saved.exists():
+    post = get_object_or_404(Post, id =post_id, is_deleted=False)
+    saved, created = SavedPost.objects.get_or_create(user=request.user, post=post)
+    
+    if not created:
         saved.delete()
-    else: 
-        SavedPost.objects.create(user=request.user, post=post)
+    
+    return redirect("posts:detail", post_id)
 
-    return redirect("posts:detail", post_id=post.id)
