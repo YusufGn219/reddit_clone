@@ -93,6 +93,11 @@
 
     <div style="max-width:1100px; margin:0 auto; padding:24px 20px;">
 
+        {% if user.is_authenticated and not user.is_email_verified %}
+        <div class="message warning" style="text-align:center; font-size:13px;">
+            ⚠ Email adresiniz doğrulanmamış.
+        </div>
+        {% endif %}
         {% if messages %}
         <div class="messages">
             {% for message in messages %}

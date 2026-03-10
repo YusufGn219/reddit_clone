@@ -11,19 +11,45 @@ from .models import Notification
 from .forms import ProfileAvatarForm, ProfileEditForm, RegisterForm
 from .models import Profile
 
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
+from .models import EmailVerification
 
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            token = EmailVerification.objects.create(user=user)
+            verify_url = request.build_absolute_uri(
+                f"/verify/{token.token}/"
+            )
+            send_mail(
+                subject="E-posta Doğrulama HK",
+                message=f"Merhaba {user.username}, \n\n Hesabınızı doğrulama linki: \n {verify_url}",
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
             login(request, user)
-            messages.success(request, "Kayıt başarıyla tamamlandı.")
+            messages.info(request, "Kayıt başarıyla tamamlandı. E-posta adresinize doğrulama linki gönderildi.")
             return redirect("home")
     else:
         form = RegisterForm()
     return render(request, "accounts/register.html", {"form": form})
 
+def verify_email(request, token):
+    try:
+        t=EmailVerification.objects.get(token=token)
+        t.user.is_email_verified =True
+        t.user.save()
+        t.delete()
+        messages.success(request,"E-posta adresininz başarıyla doğrulandı.")
+        
+    except EmailVerification.DoesNotExist:
+        messages.error(request, "Doğrulama linki geçersiz veya süresi dolmuş.")
+    
+    return redirect("home")
 
 def profile_view(request, username: str):
     user_obj = get_object_or_404(User, username=username)

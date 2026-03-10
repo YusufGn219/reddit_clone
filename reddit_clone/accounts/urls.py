@@ -9,4 +9,5 @@ urlpatterns = [
     path("notifications/", views.notifications_view, name="notifications"),
     path("avatar/edit/", views.avatar_edit, name="avatar_edit"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
+    path("verify/<uuid:token>/", views.verify_email, name = "verify_email"),
 ]
