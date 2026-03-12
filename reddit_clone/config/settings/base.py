@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "posts",
     "votes",
+    "direct_messages",
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'accounts.context_processors.unread_notifications',
                 'communities.context_processors.navbar_data',
+                'direct_messages.context_processors.unread_dm_count',
             ],
         },
     },

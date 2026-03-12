@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}u/{{ other.username }}'e Mesaj — LordAhkam{% endblock %}
+{% block content %}
+
+<div style="max-width:680px; margin:0 auto;">
+
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <a href="{% url 'dm:inbox' %}" style="color:var(--muted); font-size:18px; text-decoration:none;">←</a>
+        <div class="profile-avatar" style="width:36px; height:36px; font-size:14px; flex-shrink:0;">
+            {% if other.profile.avatar %}
+            <img src="{{ other.profile.avatar.url }}"
+                style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+            {% else %}
+            {{ other.username|first|upper }}
+            {% endif %}
+        </div>
+        <a href="{% url 'accounts:profile' username=other.username %}"
+            style="font-weight:600; font-size:15px; color:var(--text); text-decoration:none;">
+            u/{{ other.username }}
+        </a>
+    </div>
+
+    <div style="
+        padding:40px 20px;
+        text-align:center;
+        color:var(--muted);
+        font-size:14px;
+        background:var(--surface);
+        border:1px solid var(--border);
+        border-radius:var(--radius);
+        margin-bottom:16px;
+    ">
+        u/{{ other.username }} ile henüz bir konuşman yok. İlk mesajı gönder!
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.body }}
+        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+            <button type="submit" class="btn btn-primary" style="padding:8px 20px;">
+                Gönder
+            </button>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

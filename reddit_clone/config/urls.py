@@ -35,6 +35,7 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("vote/", include("votes.urls")),
     path("search/", post_views.search, name="search"),
+    path("dm/", include(("direct_messages.urls","dm"),namespace="dm")), 
 
     # Home (en sonda kalsın ki diğerleri override etmesin)
     path("", post_views.home_feed, name="home"),

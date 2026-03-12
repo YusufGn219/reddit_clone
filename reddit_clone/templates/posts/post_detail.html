@@ -10,10 +10,37 @@
             <div class="post-detail-header">
                 <div class="post-meta">
                     <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
-                    &nbsp;·&nbsp; u/{{ post.author.username }}
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'accounts:profile' username=post.author.username %}"
+                        style="color:var(--muted); text-decoration:none;">
+                        u/{{ post.author.username }}
+                    </a>
                     &nbsp;·&nbsp; {{ post.created_at|timesince }} önce
                 </div>
                 <h1 class="post-detail-title">{{ post.title }}</h1>
+
+                <!-- Award gösterimi -->
+                <div id="award-badges-post" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+                    {% regroup post.awards.all by award_type as award_groups %}
+                    {% for group in award_groups %}
+                    <span data-award="{{ group.grouper }}" style="
+                        background:var(--bg);
+                        border:1px solid var(--border);
+                        border-radius:20px;
+                        padding:3px 10px;
+                        font-size:13px;
+                    ">
+                        {% if group.grouper == "gold" %}🥇
+                        {% elif group.grouper == "silver" %}🥈
+                        {% elif group.grouper == "bronze" %}🥉
+                        {% elif group.grouper == "funny" %}😂
+                        {% elif group.grouper == "helpful" %}🙏
+                        {% elif group.grouper == "hot" %}🔥
+                        {% endif %}
+                        <span class="award-count">{{ group.list|length }}</span>
+                    </span>
+                    {% endfor %}
+                </div>
             </div>
 
             {% if post.post_type == "image" and post.image %}
@@ -42,6 +69,11 @@
                     <button type="submit" class="btn btn-ghost">🔖 Kaydet</button>
                     {% endif %}
                 </form>
+
+                {% if user != post.author %}
+                <button onclick="document.getElementById('award-modal-post').style.display='flex'"
+                    class="btn btn-ghost">🏆 Award Ver</button>
+                {% endif %}
                 {% endif %}
 
                 {% if user == post.author or user in post.community.moderators.all %}
@@ -98,4 +130,114 @@
     </div>
 </div>
 
+<!-- POST AWARD MODAL -->
+{% if user.is_authenticated and user != post.author %}
+<div id="award-modal-post" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.4); z-index:1000;
+    align-items:center; justify-content:center;
+">
+    <div style="
+        background:var(--surface); border-radius:var(--radius);
+        padding:24px; width:360px; box-shadow:var(--shadow);
+    ">
+        <h3 style="margin:0 0 16px;">Award Ver</h3>
+        <form class="award-form" action="{% url 'posts:give_award' %}">
+            {% csrf_token %}
+            <input type="hidden" name="post_id" value="{{ post.pk }}">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                <button type="submit" name="award_type" value="gold" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">🥇 Gold</button>
+                <button type="submit" name="award_type" value="silver" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">🥈 Silver</button>
+                <button type="submit" name="award_type" value="bronze" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">🥉 Bronze</button>
+                <button type="submit" name="award_type" value="funny" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">😂 Funny</button>
+                <button type="submit" name="award_type" value="helpful" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">🙏 Helpful</button>
+                <button type="submit" name="award_type" value="hot" class="btn btn-outline"
+                    style="font-size:15px; padding:12px;">🔥 Hot</button>
+            </div>
+            <button type="button" onclick="document.getElementById('award-modal-post').style.display='none'"
+                class="btn btn-outline" style="width:100%;">
+                Vazgeç
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    document.getElementById("award-modal-post")?.addEventListener("click", function (e) {
+        if (e.target === this) this.style.display = "none";
+    });
+
+    // Hangi award butonuna basıldığını takip et
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".award-form button[name='award_type']");
+        if (btn) {
+            btn.closest(".award-form").dataset.selectedAward = btn.value;
+        }
+    });
+
+    document.addEventListener("submit", function (e) {
+        const form = e.target.closest(".award-form");
+        if (!form) return;
+
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const awardType = form.dataset.selectedAward;
+        if (!awardType) return;
+        formData.append("award_type", awardType);
+
+        const postId = formData.get("post_id");
+        const commentId = formData.get("comment_id");
+        const target = postId ? "post" : "comment";
+        const targetId = postId || commentId;
+        const url = form.action;
+
+        fetch(url, {
+            method: "POST",
+            body: formData,
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const modalId = target === "post"
+                    ? "award-modal-post"
+                    : `award-modal-comment-${targetId}`;
+                const modal = document.getElementById(modalId);
+                if (modal) modal.style.display = "none";
+
+                if (!data.created) {
+                    alert("Bu award'ı zaten verdin!");
+                    return;
+                }
+
+                const containerId = target === "post"
+                    ? "award-badges-post"
+                    : `award-badges-comment-${targetId}`;
+                const container = document.getElementById(containerId);
+
+                if (container) {
+                    const existing = container.querySelector(`[data-award="${data.award_type}"]`);
+                    if (existing) {
+                        existing.querySelector(".award-count").textContent = data.count;
+                    } else {
+                        const badge = document.createElement("span");
+                        badge.dataset.award = data.award_type;
+                        badge.style.cssText = "background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:3px 10px; font-size:13px; margin-right:4px;";
+                        badge.innerHTML = `${data.icon} <span class="award-count">${data.count}</span>`;
+                        container.appendChild(badge);
+                    }
+                }
+            });
+    });
+</script>
 {% endblock %}

@@ -33,6 +33,13 @@
                 Profili Düzenle
             </a>
         </div>
+        {% elif user.is_authenticated %}
+        <div style="margin-top:10px;">
+            <a href="{% url 'dm:new' username=profile_user.username %}" class="btn btn-primary"
+                style="font-size:13px; padding:6px 14px;">
+                ✉ Mesaj Gönder
+            </a>
+        </div>
         {% endif %}
     </div>
 </div>

@@ -25,7 +25,7 @@ Django kullanarak, reddit platformunun temel özelliklerini barındıran bir web
 
 1. Repoyu klonlayın:
 ```bash
-git clone https://github.com/kullanici/reddit-clone.git
+git clone https://github.com/YusufGn219/reddit-clone.git
 cd reddit-clone
 ```
 

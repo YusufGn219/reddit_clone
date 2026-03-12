@@ -78,3 +78,68 @@ class SavedPost(models.Model):
     def __str__(self):
         return f"{self.user.username} saved {self.post.title}"
     
+
+class Award(models.Model):
+    GOLD = "gold"
+    SILVER = "silver"
+    BRONZE = "bronze"
+    FUNNY = "funny"
+    HELPFUL ="helpful"
+    HOT = "hot"
+
+    AWARD_CHOICES = [
+        (GOLD,    "🥇 Gold"),
+        (SILVER,  "🥈 Silver"),
+        (BRONZE,  "🥉 Bronze"),
+        (FUNNY,   "😂 Funny"),
+        (HELPFUL, "🙏 Helpful"),
+        (HOT,     "🔥 Hot"),
+    ]
+
+    ICONS = {
+        GOLD:    "🥇",
+        SILVER:  "🥈",
+        BRONZE:  "🥉",
+        FUNNY:   "😂",
+        HELPFUL: "🙏",
+        HOT:     "🔥",
+    }
+
+    giver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="given_awards"
+    )    
+    award_type = models.CharField(max_length = 20, choices = AWARD_CHOICES)
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        related_name="awards",
+        null = True,
+        blank =True
+    )
+    comment = models.ForeignKey(
+        "Comment",
+        on_delete=models.CASCADE,
+        related_name="awards",
+        null = True,
+        blank =True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["giver","award_type","post"],
+                condition=models.Q(post__isnull=False),
+                name="unique_post_award"
+            ),
+            models.UniqueConstraint(
+                fields=["giver","award_type","comment"],
+                condition=models.Q(comment__isnull=False),
+                name="unique_comment_award"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.get_award_type_display()} by {self.giver}"

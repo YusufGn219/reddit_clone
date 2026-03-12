@@ -1,7 +1,33 @@
 <div class="comment level-{{ depth }}">
     <div class="comment-meta">
-        <strong>{{ node.author.username }}</strong>
+        <a href="{% url 'accounts:profile' username=node.author.username %}"
+            style="color:var(--text); text-decoration:none;">
+            <strong>{{ node.author.username }}</strong>
+        </a>
         <span>{{ node.created_at|timesince }} önce</span>
+    </div>
+
+    <!-- Award gösterimi -->
+    <div id="award-badges-comment-{{ node.id }}" style="display:flex; flex-wrap:wrap; gap:4px; margin:4px 0;">
+        {% regroup node.awards.all by award_type as award_groups %}
+        {% for group in award_groups %}
+        <span data-award="{{ group.grouper }}" style="
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:20px;
+            padding:2px 8px;
+            font-size:12px;
+        ">
+            {% if group.grouper == "gold" %}🥇
+            {% elif group.grouper == "silver" %}🥈
+            {% elif group.grouper == "bronze" %}🥉
+            {% elif group.grouper == "funny" %}😂
+            {% elif group.grouper == "helpful" %}🙏
+            {% elif group.grouper == "hot" %}🔥
+            {% endif %}
+            <span class="award-count">{{ group.list|length }}</span>
+        </span>
+        {% endfor %}
     </div>
 
     {% if node.is_deleted %}
@@ -20,6 +46,13 @@
                 data-value="down">▼</button>
         </form>
 
+        {% if user != node.author %}
+        <button onclick="document.getElementById('award-modal-comment-{{ node.id }}').style.display='flex'"
+            class="btn btn-ghost" style="font-size:12px; padding:3px 8px;">
+            🏆
+        </button>
+        {% endif %}
+
         {% if user == node.author or user in post.community.moderators.all %}
         <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}" style="display:inline;">
             {% csrf_token %}
@@ -36,6 +69,45 @@
                 <button type="submit" class="btn btn-ghost" style="font-size:12px; padding:4px 10px;">Yanıtla</button>
             </div>
         </form>
+    </div>
+    {% endif %}
+
+    <!-- YORUM AWARD MODAL -->
+    {% if user.is_authenticated and user != node.author %}
+    <div id="award-modal-comment-{{ node.id }}" onclick="if(event.target===this)this.style.display='none'" style="
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.4); z-index:1000;
+            align-items:center; justify-content:center;
+        ">
+        <div style="
+            background:var(--surface); border-radius:var(--radius);
+            padding:24px; width:360px; box-shadow:var(--shadow);
+        ">
+            <h3 style="margin:0 0 16px;">Award Ver</h3>
+            <form class="award-form" action="{% url 'posts:give_award' %}">
+                {% csrf_token %}
+                <input type="hidden" name="comment_id" value="{{ node.id }}">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                    <button type="submit" name="award_type" value="gold" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">🥇 Gold</button>
+                    <button type="submit" name="award_type" value="silver" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">🥈 Silver</button>
+                    <button type="submit" name="award_type" value="bronze" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">🥉 Bronze</button>
+                    <button type="submit" name="award_type" value="funny" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">😂 Funny</button>
+                    <button type="submit" name="award_type" value="helpful" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">🙏 Helpful</button>
+                    <button type="submit" name="award_type" value="hot" class="btn btn-outline"
+                        style="font-size:15px; padding:12px;">🔥 Hot</button>
+                </div>
+                <button type="button"
+                    onclick="document.getElementById('award-modal-comment-{{ node.id }}').style.display='none'"
+                    class="btn btn-outline" style="width:100%;">
+                    Vazgeç
+                </button>
+            </form>
+        </div>
     </div>
     {% endif %}
 

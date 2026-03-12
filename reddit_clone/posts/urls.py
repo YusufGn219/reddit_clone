@@ -12,4 +12,5 @@ urlpatterns = [
     path("<int:post_id>/delete/", views.post_delete, name="post_delete"),
     path("<int:post_id>/comment/<int:comment_id>/delete/", views.comment_delete, name="comment_delete"),
     path("<int:post_id>/save/", views.save_post, name="save_post"),
+    path("award/", views.give_award, name="give_award")
 ]

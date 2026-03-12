@@ -2,6 +2,7 @@ from posts.models import SavedPost
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 
 from .models import Post, Comment, SavedPost
 from .forms import PostCreateForm, CommentForm
@@ -18,6 +19,7 @@ from accounts.models import Notification
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from communities.models import BannedUser
+from .models import Award
 
 
 
@@ -87,6 +89,7 @@ def post_detail(request, post_id):
         "comment_form": comment_form,
         "comment_tree": comment_tree,
         "is_saved": is_saved,
+        "award_choices": Award.AWARD_CHOICES,
     })
 
 
@@ -203,3 +206,63 @@ def save_post(request, post_id):
     
     return redirect("posts:detail", post_id)
 
+@login_required
+def give_award(request):
+    if request.method != "POST":
+        return redirect("home")
+
+    award_type = request.POST.get("award_type")
+    post_id = request.POST.get("post_id")
+    comment_id = request.POST.get("comment_id")
+
+    valid_types = ["gold", "silver", "bronze", "funny", "helpful", "hot"]
+    if award_type not in valid_types:
+        return redirect("home")
+
+
+    icons = {
+        "gold": "🥇", "silver": "🥈", "bronze": "🥉",
+        "funny": "😂", "helpful": "🙏", "hot": "🔥",
+    }
+
+    if post_id:
+        post = get_object_or_404(Post, pk=post_id)
+        if post.author == request.user:
+            return JsonResponse({"error": "Kendi postuna award veremezsin."}, status=400)
+        _, created = Award.objects.get_or_create(
+            giver=request.user,
+            award_type=award_type,
+            post=post,
+            comment=None,
+        )
+        count = Award.objects.filter(post=post, award_type=award_type).count()
+        return JsonResponse({
+            "created": created,
+            "award_type": award_type,
+            "icon": icons[award_type],
+            "count": count,
+            "target": "post",
+            "target_id": post_id,
+        })
+
+    elif comment_id:
+        comment = get_object_or_404(Comment, pk=comment_id)
+        if comment.author == request.user:
+            return JsonResponse({"error": "Kendi yorumuna award veremezsin."}, status=400)
+        _, created = Award.objects.get_or_create(
+            giver=request.user,
+            award_type=award_type,
+            comment=comment,
+            post=None,
+        )
+        count = Award.objects.filter(comment=comment, award_type=award_type).count()
+        return JsonResponse({
+            "created": created,
+            "award_type": award_type,
+            "icon": icons[award_type],
+            "count": count,
+            "target": "comment",
+            "target_id": comment_id,
+        })
+
+    return JsonResponse({"error": "Geçersiz istek."}, status=400)

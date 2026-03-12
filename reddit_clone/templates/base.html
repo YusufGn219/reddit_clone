@@ -74,6 +74,12 @@
             {% endif %}
         </a>
 
+        <a href="{% url 'dm:inbox' %}" class="navbar-notif" title="Mesajlar">✉️
+            {% if unread_dm_count %}
+            <span class="notif-badge">{{ unread_dm_count }}</span>
+            {% endif %}
+        </a>
+
         <a href="{% url 'accounts:profile' username=user.username %}" class="navbar-link"
             style="font-weight:600; color:var(--text) !important;">
             u/{{ user.username }}
