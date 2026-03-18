@@ -3,7 +3,7 @@
 {% block content %}
 <div class="form-card">
     <h1>{{ community.title }} — Düzenle</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <div style="display:flex; gap:10px; margin-top:4px;">

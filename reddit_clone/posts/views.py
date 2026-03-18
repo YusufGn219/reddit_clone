@@ -2,10 +2,10 @@ from posts.models import SavedPost
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 
 from .models import Post, Comment, SavedPost
-from .forms import PostCreateForm, CommentForm
+from .forms import PostCreateForm, CommentForm, PostEditForm
 from .services.comments import build_comment_tree
 from django.db.models import Sum
 from .services.querysets import with_post_score
@@ -15,17 +15,27 @@ from communities.permissions import can_moderate
 from django.db.models import Q
 from communities.models import Community
 from django.contrib import messages
-from accounts.models import Notification
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from accounts.models import Notification, Follow
 from communities.models import BannedUser
 from .models import Award
 
 
-
 def home_feed(request):
     sort, t = normalize_sort_and_time(request.GET)
-    qs = Post.objects.filter(is_deleted=False).select_related("community", "author")
+    feed = request.GET.get("feed", "all")
+
+    if feed == "following" and request.user.is_authenticated:
+        followed_users = Follow.objects.filter(
+            follower=request.user
+        ).values_list("followed", flat=True)
+        qs = Post.objects.filter(
+            is_deleted=False,
+            author__in=followed_users
+        ).select_related("community", "author")
+    else:
+        feed = "all"
+        qs = Post.objects.filter(is_deleted=False).select_related("community", "author")
+
     qs = with_post_score(qs)
     qs = apply_sort(qs, sort, t)
 
@@ -37,7 +47,9 @@ def home_feed(request):
         "page_obj": page_obj,
         "sort": sort,
         "t": t,
+        "feed": feed,
     })
+
 
 @login_required
 def post_create(request):
@@ -82,7 +94,7 @@ def post_detail(request, post_id):
                 n.is_downvoted = (v == -1)
                 attach_flags(getattr(n, "child_nodes", []))
 
-        attach_flags(comment_tree)        
+        attach_flags(comment_tree)
 
     return render(request, "posts/post_detail.html", {
         "post": post,
@@ -133,21 +145,22 @@ def reply_create(request, post_id, parent_id):
             return redirect("posts:detail", post_id=post.id)
         r.save()
 
-    if parent.author != request.user:
-        Notification.objects.create(
-            user=parent.author,
-            type=Notification.REPLY,
-            comment=r
-        )
+        if parent.author != request.user:
+            Notification.objects.create(
+                user=parent.author,
+                type=Notification.REPLY,
+                comment=r,
+                actor=request.user
+            )
 
     return redirect("posts:detail", post_id=post.id)
+
 
 @login_required
 def post_delete(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
 
     if request.user != post.author and not can_moderate(request.user, post.community):
-        from django.http import HttpResponseForbidden
         return HttpResponseForbidden()
 
     if request.method == "POST":
@@ -158,13 +171,13 @@ def post_delete(request, post_id):
 
     return redirect("posts:detail", post_id=post.id)
 
+
 @login_required
 def comment_delete(request, post_id, comment_id):
     post = get_object_or_404(Post, pk=post_id)
     comment = get_object_or_404(Comment, pk=comment_id, post=post)
 
     if request.user != comment.author and not can_moderate(request.user, post.community):
-        from django.http import HttpResponseForbidden
         return HttpResponseForbidden()
 
     if request.method == "POST":
@@ -173,6 +186,7 @@ def comment_delete(request, post_id, comment_id):
         messages.success(request, "Yorum başarıyla silindi.")
 
     return redirect("posts:detail", post_id=post.id)
+
 
 def search(request):
     q = request.GET.get("q", "").strip()
@@ -196,15 +210,17 @@ def search(request):
         "community_results": community_results,
     })
 
+
 @login_required
 def save_post(request, post_id):
-    post = get_object_or_404(Post, id =post_id, is_deleted=False)
+    post = get_object_or_404(Post, id=post_id, is_deleted=False)
     saved, created = SavedPost.objects.get_or_create(user=request.user, post=post)
-    
+
     if not created:
         saved.delete()
-    
+
     return redirect("posts:detail", post_id)
+
 
 @login_required
 def give_award(request):
@@ -219,7 +235,6 @@ def give_award(request):
     if award_type not in valid_types:
         return redirect("home")
 
-
     icons = {
         "gold": "🥇", "silver": "🥈", "bronze": "🥉",
         "funny": "😂", "helpful": "🙏", "hot": "🔥",
@@ -229,16 +244,34 @@ def give_award(request):
         post = get_object_or_404(Post, pk=post_id)
         if post.author == request.user:
             return JsonResponse({"error": "Kendi postuna award veremezsin."}, status=400)
-        _, created = Award.objects.get_or_create(
-            giver=request.user,
-            award_type=award_type,
-            post=post,
-            comment=None,
-        )
+
+        try:
+            existing_award = Award.objects.get(giver=request.user, post=post, comment=None)
+            old_award_type = existing_award.award_type
+            existing_award.award_type = award_type
+            existing_award.save()
+            created = False
+        except Award.DoesNotExist:
+            Award.objects.create(giver=request.user, post=post, comment=None, award_type=award_type)
+            old_award_type = None
+            created = True
+
+        if created:
+            Notification.objects.create(
+                user=post.author,
+                type=Notification.AWARD,
+                post=post,
+                actor=request.user
+            )
+
         count = Award.objects.filter(post=post, award_type=award_type).count()
+        old_count = Award.objects.filter(post=post, award_type=old_award_type).count() if old_award_type else None
+
         return JsonResponse({
             "created": created,
             "award_type": award_type,
+            "old_award_type": old_award_type,
+            "old_count": old_count,
             "icon": icons[award_type],
             "count": count,
             "target": "post",
@@ -249,16 +282,34 @@ def give_award(request):
         comment = get_object_or_404(Comment, pk=comment_id)
         if comment.author == request.user:
             return JsonResponse({"error": "Kendi yorumuna award veremezsin."}, status=400)
-        _, created = Award.objects.get_or_create(
-            giver=request.user,
-            award_type=award_type,
-            comment=comment,
-            post=None,
-        )
+
+        try:
+            existing_award = Award.objects.get(giver=request.user, comment=comment, post=None)
+            old_award_type = existing_award.award_type
+            existing_award.award_type = award_type
+            existing_award.save()
+            created = False
+        except Award.DoesNotExist:
+            Award.objects.create(giver=request.user, comment=comment, post=None, award_type=award_type)
+            old_award_type = None
+            created = True
+
+        if created:
+            Notification.objects.create(
+                user=comment.author,
+                type=Notification.AWARD,
+                comment=comment,
+                actor=request.user
+            )
+
         count = Award.objects.filter(comment=comment, award_type=award_type).count()
+        old_count = Award.objects.filter(comment=comment, award_type=old_award_type).count() if old_award_type else None
+
         return JsonResponse({
             "created": created,
             "award_type": award_type,
+            "old_award_type": old_award_type,
+            "old_count": old_count,
             "icon": icons[award_type],
             "count": count,
             "target": "comment",
@@ -266,3 +317,49 @@ def give_award(request):
         })
 
     return JsonResponse({"error": "Geçersiz istek."}, status=400)
+
+
+@login_required
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.user != post.author:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        form = PostEditForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.is_edited = True
+            post.save()
+            return redirect("posts:detail", post_id=post.id)
+    else:
+        form = PostEditForm(instance=post)
+
+    return render(request, "posts/post_detail.html", {
+        "post": post,
+        "comment_form": CommentForm(),
+        "comment_tree": build_comment_tree(post),
+        "is_saved": SavedPost.objects.filter(user=request.user, post=post).exists(),
+        "award_choices": Award.AWARD_CHOICES,
+        "edit_form": form,
+        "editing": True,
+    })
+
+
+@login_required
+def comment_edit(request, post_id, comment_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comment = get_object_or_404(Comment, pk=comment_id, post=post)
+
+    if request.user != comment.author:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            edited = form.save(commit=False)
+            edited.is_edited = True
+            edited.save()
+
+    return redirect("posts:detail", post_id=post.id)

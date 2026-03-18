@@ -1,10 +1,11 @@
+from django.contrib.admin.templatetags.admin_list import items_for_result
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib import messages
 
 from .forms import RegisterForm
-from .models import User
+from .models import User, Follow
 from posts.models import Post, Comment, SavedPost
 from .models import Notification
 
@@ -77,10 +78,24 @@ def profile_view(request, username: str):
             is_deleted=False
         ).select_related("community").order_by("-created_at")
 
+    is_following= False
+    follower_count = Follow.objects.filter(followed=user_obj).count()
+    following_count = Follow.objects.filter(follower=user_obj).count()
+
+    if request.user.is_authenticated:
+        is_following = Follow.objects.filter(
+            follower=request.user,
+            followed=user_obj
+        ).exists()
+
+
     return render(request, "accounts/profile.html", {
         "profile_user": user_obj,
         "items": items,
         "tab": tab,
+        "is_following": is_following,
+        "follower_count":follower_count,
+        "following_count":following_count,
     })
 
 
@@ -129,3 +144,26 @@ def profile_edit(request):
     return render(request, "accounts/profile_edit.html", {
         "form": form,
     })
+
+@login_required
+def follow_user(request, username):
+    target = get_object_or_404(User, username=username)
+
+    if request.user == target:
+        return redirect("accounts:profile", username=username)
+
+    follow, created = Follow.objects.get_or_create(
+        follower=request.user,
+        followed=target
+    )
+
+    if not created:
+        follow.delete()
+    else:
+        Notification.objects.create(
+            user=target,
+            type=Notification.FOLLOW,
+            actor=request.user
+        )
+
+    return redirect("accounts:profile", username=username)

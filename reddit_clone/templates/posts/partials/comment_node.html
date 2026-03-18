@@ -34,6 +34,9 @@
     <em class="deleted">[deleted]</em>
     {% else %}
     <p class="comment-body">{{ node.body }}</p>
+    {% if node.is_edited %}
+    <small style="color:var(--muted); font-size:11px;">(düzenlendi)</small>
+    {% endif %}
     {% endif %}
 
     {% if user.is_authenticated and not node.is_deleted %}
@@ -53,14 +56,30 @@
         </button>
         {% endif %}
 
+        {% if user == node.author %}
+        <button
+            onclick="document.getElementById('edit-comment-form-{{ node.id }}').style.display='block'; this.style.display='none';"
+            class="btn btn-ghost" style="font-size:12px; padding:3px 8px;">✏️ Düzenle</button>
+        {% endif %}
         {% if user == node.author or user in post.community.moderators.all %}
-        <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger" style="padding:3px 8px; font-size:11px;">Sil</button>
-        </form>
+        <button onclick="document.getElementById('delete-comment-modal-{{ node.id }}').style.display='flex'"
+            class="btn btn-danger" style="padding:3px 8px; font-size:11px;">Sil</button>
         {% endif %}
     </div>
-
+    {% if user == node.author %}
+    <div id="edit-comment-form-{{ node.id }}" style="display:none; margin-top:8px;">
+        <form method="post" action="{% url 'posts:comment_edit' post.id node.id %}">
+            {% csrf_token %}
+            <textarea name="body" rows="3" style="width:100%; box-sizing:border-box;">{{ node.body }}</textarea>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+                <button type="submit" class="btn btn-primary" style="font-size:12px; padding:4px 10px;">Kaydet</button>
+                <button type="button"
+                    onclick="document.getElementById('edit-comment-form-{{ node.id }}').style.display='none'; document.querySelector('[onclick*=\'edit-comment-form-{{ node.id }}\']').style.display='';"
+                    class="btn btn-ghost" style="font-size:12px; padding:4px 10px;">İptal</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
     <div class="reply-form">
         <form method="post" action="{% url 'posts:reply_create' post.id node.id %}">
             {% csrf_token %}
@@ -72,6 +91,33 @@
     </div>
     {% endif %}
 
+    <!-- YORUM SİLME MODAL -->
+    {% if user == node.author or user in post.community.moderators.all %}
+    <div id="delete-comment-modal-{{ node.id }}" onclick="if(event.target===this)this.style.display='none'" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.4); z-index:1000;
+    align-items:center; justify-content:center;
+">
+        <div style="
+        background:var(--surface); border-radius:var(--radius);
+        padding:24px; width:360px; box-shadow:var(--shadow);
+    ">
+            <h3 style="margin:0 0 12px;">Yorumu Sil</h3>
+            <p style="font-size:14px; color:var(--muted); margin-bottom:20px;">
+                Bu yorumu silmek istediğine emin misin?
+            </p>
+            <div style="display:flex; gap:8px;">
+                <form method="post" action="{% url 'posts:comment_delete' post.id node.id %}" style="flex:1;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="width:100%;">Evet, Sil</button>
+                </form>
+                <button type="button"
+                    onclick="document.getElementById('delete-comment-modal-{{ node.id }}').style.display='none'"
+                    class="btn btn-ghost" style="flex:1;">Vazgeç</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <!-- YORUM AWARD MODAL -->
     {% if user.is_authenticated and user != node.author %}
     <div id="award-modal-comment-{{ node.id }}" onclick="if(event.target===this)this.style.display='none'" style="

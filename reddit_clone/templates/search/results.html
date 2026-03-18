@@ -1,26 +1,91 @@
 {% extends "base.html" %}
+{% block title %}"{{ q }}" — Arama Sonuçları{% endblock %}
 {% block content %}
 
-<h1>"{{ q }}" için arama sonuçları</h1>
+<div class="page-wrap">
+    <div class="main-col">
 
-<h2>Gönderiler</h2>
-{% for post in post_results %}
-<div>
-    <a href="{% url 'posts:detail' post.id %}">{{ post.title }}</a>
-    <small>{{ post.author.username }} | c/{{ post.community.name }}</small>
-</div>
-{% empty %}
-<p>Gönderi bulunamadı.</p>
-{% endfor %}
+        <h1 style="font-size:22px; margin-bottom:20px;">
+            "{{ q }}" için arama sonuçları
+        </h1>
 
-<h2>Topluluklar</h2>
-{% for community in community_results %}
-<div>
-    <a href="{% url 'communities:detail' name=community.name %}">c/{{ community.name }}</a>
-    <small>{{ community.title }}</small>
+        <!-- Gönderiler -->
+        <h2
+            style="font-size:16px; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">
+            Gönderiler
+        </h2>
+
+        {% for post in post_results %}
+        <div class="post-card">
+            <div class="post-body">
+                <div class="post-meta">
+                    <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'accounts:profile' username=post.author.username %}"
+                        style="color:var(--muted); text-decoration:none;">
+                        u/{{ post.author.username }}
+                    </a>
+                    &nbsp;·&nbsp; {{ post.created_at|timesince }} önce
+                </div>
+                <a href="{% url 'posts:detail' post.id %}" class="post-title">{{ post.title }}</a>
+                {% if post.body %}
+                <p style="font-size:13px; color:var(--muted); margin-top:4px;">
+                    {{ post.body|truncatechars:120 }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="margin-bottom:24px;">
+            <p>Gönderi bulunamadı.</p>
+        </div>
+        {% endfor %}
+
+        <!-- Topluluklar -->
+        <h2
+            style="font-size:16px; color:var(--muted); margin-top:24px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">
+            Topluluklar
+        </h2>
+
+        {% for community in community_results %}
+        <div class="post-card">
+            <div class="post-body">
+                <a href="{% url 'communities:detail' name=community.name %}" class="post-title">
+                    c/{{ community.name }}
+                </a>
+                <p style="font-size:13px; color:var(--muted); margin-top:4px;">
+                    {{ community.title }}
+                    {% if community.description %}
+                    — {{ community.description|truncatechars:100 }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Topluluk bulunamadı.</p>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="side-col">
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <h3>Arama</h3>
+            </div>
+            <div class="sidebar-card-body">
+                <form method="get" action="{% url 'search' %}">
+                    <input type="text" name="q" value="{{ q }}" placeholder="Ara..."
+                        style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg); color:var(--text); font-size:14px; box-sizing:border-box;">
+                    <button type="submit" class="btn btn-primary"
+                        style="width:100%; margin-top:8px; justify-content:center;">
+                        🔍 Ara
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-{% empty %}
-<p>Topluluk bulunamadı.</p>
-{% endfor %}
 
 {% endblock %}

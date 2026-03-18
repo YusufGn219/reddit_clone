@@ -5,31 +5,50 @@
 <div class="page-wrap">
     <div class="main-col">
 
+        {% if user.is_authenticated %}
+        <div style="display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid var(--border);">
+            <a href="?feed=all&sort={{ sort }}&t={{ t }}" style="
+                padding:8px 18px; font-size:14px; font-weight:600; text-decoration:none;
+                border-bottom: 2px solid {% if feed == 'all' %}var(--accent){% else %}transparent{% endif %};
+                color: {% if feed == 'all' %}var(--accent){% else %}var(--muted){% endif %};
+                margin-bottom:-2px;">
+                🌐 Tümü
+            </a>
+            <a href="?feed=following&sort={{ sort }}&t={{ t }}" style="
+                padding:8px 18px; font-size:14px; font-weight:600; text-decoration:none;
+                border-bottom: 2px solid {% if feed == 'following' %}var(--accent){% else %}transparent{% endif %};
+                color: {% if feed == 'following' %}var(--accent){% else %}var(--muted){% endif %};
+                margin-bottom:-2px;">
+                👥 Takip Edilenler
+            </a>
+        </div>
+        {% endif %}
+
         <div class="sort-bar">
             {% if sort == 'hot' %}
-            <a href="?sort=hot" class="active">🔥 Hot</a>
+            <a href="?feed={{ feed }}&sort=hot" class="active">🔥 Hot</a>
             {% else %}
-            <a href="?sort=hot">🔥 Hot</a>
+            <a href="?feed={{ feed }}&sort=hot">🔥 Hot</a>
             {% endif %}
             {% if sort == 'new' %}
-            <a href="?sort=new" class="active">✨ New</a>
+            <a href="?feed={{ feed }}&sort=new" class="active">✨ New</a>
             {% else %}
-            <a href="?sort=new">✨ New</a>
+            <a href="?feed={{ feed }}&sort=new">✨ New</a>
             {% endif %}
             {% if sort == 'top' and t == 'day' %}
-            <a href="?sort=top&t=day" class="active">📅 Bugün</a>
+            <a href="?feed={{ feed }}&sort=top&t=day" class="active">📅 Bugün</a>
             {% else %}
-            <a href="?sort=top&t=day">📅 Bugün</a>
+            <a href="?feed={{ feed }}&sort=top&t=day">📅 Bugün</a>
             {% endif %}
             {% if sort == 'top' and t == 'week' %}
-            <a href="?sort=top&t=week" class="active">📆 Hafta</a>
+            <a href="?feed={{ feed }}&sort=top&t=week" class="active">📆 Hafta</a>
             {% else %}
-            <a href="?sort=top&t=week">📆 Hafta</a>
+            <a href="?feed={{ feed }}&sort=top&t=week">📆 Hafta</a>
             {% endif %}
             {% if sort == 'top' and t == 'all' %}
-            <a href="?sort=top&t=all" class="active">🏆 Tüm</a>
+            <a href="?feed={{ feed }}&sort=top&t=all" class="active">🏆 Tüm</a>
             {% else %}
-            <a href="?sort=top&t=all">🏆 Tüm</a>
+            <a href="?feed={{ feed }}&sort=top&t=all">🏆 Tüm</a>
             {% endif %}
         </div>
 
@@ -56,7 +75,8 @@
             <div class="post-body">
                 <div class="post-meta">
                     <a href="{% url 'communities:detail' name=post.community.name %}">c/{{ post.community.name }}</a>
-                    &nbsp;·&nbsp; <a href="{% url 'accounts:profile' username=post.author.username %}"
+                    &nbsp;·&nbsp;
+                    <a href="{% url 'accounts:profile' username=post.author.username %}"
                         style="color:var(--muted); text-decoration:none;">
                         u/{{ post.author.username }}
                     </a>
@@ -72,19 +92,23 @@
         </div>
         {% empty %}
         <div class="empty-state">
+            {% if feed == "following" %}
+            <p>Takip ettiğin kimse henüz post paylaşmadı.</p>
+            {% else %}
             <p>Henüz gönderi yok. <a href="{% url 'posts:post_create' %}">İlk gönderini oluştur!</a></p>
+            {% endif %}
         </div>
         {% endfor %}
 
         <div class="pagination">
             {% if page_obj.has_previous %}
-            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}" class="btn btn-outline">←
-                Önceki</a>
+            <a href="?feed={{ feed }}&sort={{ sort }}&t={{ t }}&page={{ page_obj.previous_page_number }}"
+                class="btn btn-outline">← Önceki</a>
             {% endif %}
             <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-            <a href="?sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}" class="btn btn-outline">Sonraki
-                →</a>
+            <a href="?feed={{ feed }}&sort={{ sort }}&t={{ t }}&page={{ page_obj.next_page_number }}"
+                class="btn btn-outline">Sonraki →</a>
             {% endif %}
         </div>
 

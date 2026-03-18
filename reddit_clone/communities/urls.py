@@ -12,5 +12,6 @@ urlpatterns = [
     path("<str:name>/rules/<int:rule_id>/delete/", views.rule_delete, name="rule_delete"),
     path("<str:name>/mod/remove/<int:user_id>/", views.remove_moderator, name="remove_moderator"),
     path("<str:name>/ban/<int:user_id>/", views.ban_user, name="ban_user"),
-path("<str:name>/unban/<int:user_id>/", views.unban_user, name="unban_user"),
+    path("<str:name>/unban/<int:user_id>/", views.unban_user, name="unban_user"),
+    path("<str:name>/join/", views.join_community, name="join"),
 ]

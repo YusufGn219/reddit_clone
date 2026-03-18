@@ -18,6 +18,9 @@
                     &nbsp;·&nbsp; {{ post.created_at|timesince }} önce
                 </div>
                 <h1 class="post-detail-title">{{ post.title }}</h1>
+                {% if post.is_edited %}
+                <small style="color:var(--muted); font-size:12px;">(düzenlendi)</small>
+                {% endif %}
 
                 <!-- Award gösterimi -->
                 <div id="award-badges-post" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
@@ -76,13 +79,48 @@
                 {% endif %}
                 {% endif %}
 
+                {% if user == post.author %}
+                <button id="edit-post-btn" class="btn btn-ghost">✏️ Düzenle</button>
+                {% endif %}
+
                 {% if user == post.author or user in post.community.moderators.all %}
-                <form method="post" action="{% url 'posts:post_delete' post.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">🗑 Sil</button>
-                </form>
+                <button onclick="document.getElementById('delete-post-modal').style.display='flex'"
+                    class="btn btn-danger">🗑 Sil</button>
                 {% endif %}
             </div>
+
+            <!-- Inline düzenleme formu -->
+            {% if user == post.author %}
+            <div id="edit-post-form"
+                style="display:{% if editing %}block{% else %}none{% endif %}; margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:var(--radius);">
+                <form method="post" action="{% url 'posts:post_edit' post.id %}">
+                    {% csrf_token %}
+                    <div style="margin-bottom:10px;">
+                        <label
+                            style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Başlık</label>
+                        {{ edit_form.title }}
+                    </div>
+                    {% if post.post_type == "text" %}
+                    <div style="margin-bottom:10px;">
+                        <label
+                            style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">İçerik</label>
+                        {{ edit_form.body }}
+                    </div>
+                    {% elif post.post_type == "link" %}
+                    <div style="margin-bottom:10px;">
+                        <label
+                            style="font-size:13px; color:var(--muted); display:block; margin-bottom:4px;">Link</label>
+                        {{ edit_form.url }}
+                    </div>
+                    {% endif %}
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                        <button type="button" id="cancel-edit-btn" class="btn btn-ghost">İptal</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
         </div>
 
         <div class="comments-section">
@@ -131,6 +169,31 @@
 </div>
 
 <!-- POST AWARD MODAL -->
+{% if user == post.author or user in post.community.moderators.all %}
+<div id="delete-post-modal" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.4); z-index:1000;
+    align-items:center; justify-content:center;
+">
+    <div style="
+        background:var(--surface); border-radius:var(--radius);
+        padding:24px; width:360px; box-shadow:var(--shadow);
+    ">
+        <h3 style="margin:0 0 12px;">Gönderiyi Sil</h3>
+        <p style="font-size:14px; color:var(--muted); margin-bottom:20px;">
+            Bu gönderiyi silmek istediğine emin misin? Bu işlem geri alınamaz.
+        </p>
+        <div style="display:flex; gap:8px;">
+            <form method="post" action="{% url 'posts:post_delete' post.id %}" style="flex:1;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" style="width:100%;">Evet, Sil</button>
+            </form>
+            <button type="button" onclick="document.getElementById('delete-post-modal').style.display='none'"
+                class="btn btn-ghost" style="flex:1;">Vazgeç</button>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% if user.is_authenticated and user != post.author %}
 <div id="award-modal-post" style="
     display:none; position:fixed; inset:0;
@@ -169,8 +232,19 @@
 {% endif %}
 
 <script>
+    // Award modal dışına tıklayınca kapat
     document.getElementById("award-modal-post")?.addEventListener("click", function (e) {
         if (e.target === this) this.style.display = "none";
+    });
+
+    // Düzenleme formu aç/kapat
+    document.getElementById('edit-post-btn')?.addEventListener('click', () => {
+        document.getElementById('edit-post-form').style.display = 'block';
+        document.getElementById('edit-post-btn').style.display = 'none';
+    });
+    document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
+        document.getElementById('edit-post-form').style.display = 'none';
+        document.getElementById('edit-post-btn').style.display = 'block';
     });
 
     // Hangi award butonuna basıldığını takip et
@@ -215,17 +289,23 @@
                 const modal = document.getElementById(modalId);
                 if (modal) modal.style.display = "none";
 
-                if (!data.created) {
-                    alert("Bu award'ı zaten verdin!");
-                    return;
-                }
-
                 const containerId = target === "post"
                     ? "award-badges-post"
                     : `award-badges-comment-${targetId}`;
                 const container = document.getElementById(containerId);
 
                 if (container) {
+                    if (data.old_award_type && data.old_award_type !== data.award_type) {
+                        const oldBadge = container.querySelector(`[data-award="${data.old_award_type}"]`);
+                        if (oldBadge) {
+                            if (data.old_count <= 0) {
+                                oldBadge.remove();
+                            } else {
+                                oldBadge.querySelector(".award-count").textContent = data.old_count;
+                            }
+                        }
+                    }
+
                     const existing = container.querySelector(`[data-award="${data.award_type}"]`);
                     if (existing) {
                         existing.querySelector(".award-count").textContent = data.count;
@@ -238,6 +318,9 @@
                     }
                 }
             });
+    });
+    document.getElementById("delete-post-modal")?.addEventListener("click", function (e) {
+        if (e.target === this) this.style.display = "none";
     });
 </script>
 {% endblock %}

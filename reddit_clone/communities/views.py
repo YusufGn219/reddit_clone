@@ -6,7 +6,7 @@ from django.http import HttpResponseForbidden
 from django.contrib import messages
 
 from .forms import CommunityCreateForm, CommunityEditForm
-from .models import Community, CommunityModerator, CommunityRule, BannedUser
+from .models import Community, CommunityModerator, CommunityRule, BannedUser, CommunityMember
 from .permissions import can_moderate, is_community_owner
 
 from posts.models import Post
@@ -54,11 +54,21 @@ def community_detail(request, name):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    member_count = community.members.count()
+    is_member = False
+    if request.user.is_authenticated:
+        is_member = CommunityMember.objects.filter(
+            community=community,
+            user=request.user
+        ).exists()
+
     return render(request, "communities/community_detail.html", {
         "community": community,
         "page_obj": page_obj,
         "sort": sort,
         "t": t,
+        "member_count": member_count,
+        "is_member": is_member,
     })
 
 
@@ -70,7 +80,7 @@ def community_edit(request, name):
         return HttpResponseForbidden()
 
     if request.method == "POST":
-        form = CommunityEditForm(request.POST, instance=community)
+        form = CommunityEditForm(request.POST, request.FILES, instance=community)
         if form.is_valid():
             form.save()
             messages.success(request, "Topluluk başarıyla güncellendi.")
@@ -261,3 +271,17 @@ def unban_user(request, name, user_id):
         messages.success(request, "Ban kaldırıldı.")
 
     return redirect("communities:detail", name=community.name)
+
+@login_required
+def join_community (request,name):
+    community=get_object_or_404(Community,name=name)
+
+    if request.method == "POST":
+        member , created = CommunityMember.objects.get_or_create(
+            community=community,
+            user=request.user
+        )
+        if not created:
+            member.delete()
+    
+    return redirect ("communties:detail", name=community.name)

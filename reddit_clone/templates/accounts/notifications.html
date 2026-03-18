@@ -7,21 +7,61 @@
 
     <div class="sidebar-card" style="max-width:100%;">
         {% for notification in notifications %}
-        <a href="{% url 'posts:detail' notification.comment.post.id %}" class="notif-item">
+
+        {% if notification.type == "reply" %}
+        <a href="{% url 'posts:detail' notification.comment.post.id %}"
+            class="notif-item {% if not notification.is_read %}notif-unread{% endif %}">
             <div class="notif-icon">💬</div>
             <div>
                 <div class="notif-text">
-                    <strong>{{ notification.comment.author.username }}</strong>
+                    <strong>{{ notification.actor.username }}</strong>
                     yorumuna yanıt yazdı: "{{ notification.comment.body|truncatechars:80 }}"
                 </div>
                 <div class="notif-time">{{ notification.created_at|date:"d M Y H:i" }}</div>
             </div>
         </a>
-        {% empty %}
-        <div class="empty-state">
-            <p>Henüz bildirim yok.</p>
-        </div>
-        {% endfor %}
+
+        {% elif notification.type == "award" %}
+        {% if notification.post %}
+        <a href="{% url 'posts:detail' notification.post.id %}"
+            class="notif-item {% if not notification.is_read %}notif-unread{% endif %}">
+            {% else %}
+            <a href="{% url 'posts:detail' notification.comment.post.id %}"
+                class="notif-item {% if not notification.is_read %}notif-unread{% endif %}">
+                {% endif %}
+                <div class="notif-icon">🏆</div>
+                <div>
+                    <div class="notif-text">
+                        <strong>{{ notification.actor.username }}</strong>
+                        {% if notification.post %}
+                        gönderine award verdi.
+                        {% else %}
+                        yorumuna award verdi.
+                        {% endif %}
+                    </div>
+                    <div class="notif-time">{{ notification.created_at|date:"d M Y H:i" }}</div>
+                </div>
+            </a>
+
+            {% elif notification.type == "follow" %}
+            <a href="{% url 'accounts:profile' username=notification.actor.username %}"
+                class="notif-item {% if not notification.is_read %}notif-unread{% endif %}">
+                <div class="notif-icon">👤</div>
+                <div>
+                    <div class="notif-text">
+                        <strong>{{ notification.actor.username }}</strong>
+                        seni takip etmeye başladı.
+                    </div>
+                    <div class="notif-time">{{ notification.created_at|date:"d M Y H:i" }}</div>
+                </div>
+            </a>
+            {% endif %}
+
+            {% empty %}
+            <div class="empty-state">
+                <p>Henüz bildirim yok.</p>
+            </div>
+            {% endfor %}
     </div>
 </div>
 

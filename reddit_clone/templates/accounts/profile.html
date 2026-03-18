@@ -13,6 +13,10 @@
     <div class="profile-info">
         <h1>u/{{ profile_user.username }}</h1>
         <span class="karma-badge">✦ {{ profile_user.karma }} karma</span>
+        <span style="font-size:13px; color:var(--muted); margin-top:4px;">
+            <strong>{{ follower_count }}</strong> takipçi &nbsp;·&nbsp;
+            <strong>{{ following_count }}</strong> takip edilen
+        </span>
 
         {% if profile_user.email and user == profile_user %}
         <p style="font-size:13px; color:var(--muted); margin-top:6px;">
@@ -39,6 +43,18 @@
                 style="font-size:13px; padding:6px 14px;">
                 ✉ Mesaj Gönder
             </a>
+            <form method="post" action="{% url 'accounts:follow_user' username=profile_user.username %}">
+                {% csrf_token %}
+                {% if is_following %}
+                <button type="submit" class="btn btn-outline" style="font-size:13px; padding:6px 14px;">
+                    ✓ Takip Ediliyor
+                </button>
+                {% else %}
+                <button type="submit" class="btn btn-primary" style="font-size:13px; padding:6px 14px;">
+                    + Takip Et
+                </button>
+                {% endif %}
+            </form>
         </div>
         {% endif %}
     </div>

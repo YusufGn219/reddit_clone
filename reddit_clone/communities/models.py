@@ -12,6 +12,7 @@ class Community(models.Model):
         related_name = "communities_created"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    banner = models.ImageField(upload_to="banners/", blank=True, null=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -65,3 +66,22 @@ class BannedUser(models.Model):
 
     def __str__(self):
         return f"{self.user} banned from {self.community}"
+
+class CommunityMember(models.Model):
+    community = models.ForeignKey(
+        Community,
+        on_delete=models.CASCADE,
+        related_name="members"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="joined_communities"
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together =[("community","user")]
+
+    def __str__(self):
+        return f"{self.user} joined {self.community}"

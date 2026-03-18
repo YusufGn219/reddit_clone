@@ -19,6 +19,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
+    is_edited = models.BooleanField(default=False)
 
     class PostType(models.TextChoices):
         TEXT = "text", "Metin"
@@ -47,6 +48,8 @@ class Comment(models.Model):
     body = models.TextField(max_length=3000)
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_edited = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["created_at"]
@@ -130,12 +133,12 @@ class Award(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["giver","award_type","post"],
+                fields=["giver", "post"],
                 condition=models.Q(post__isnull=False),
                 name="unique_post_award"
             ),
             models.UniqueConstraint(
-                fields=["giver","award_type","comment"],
+                fields=["giver", "comment"],
                 condition=models.Q(comment__isnull=False),
                 name="unique_comment_award"
             ),

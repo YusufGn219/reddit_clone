@@ -59,7 +59,13 @@ class Profile(models.Model):
 
 class Notification(models.Model):
     REPLY = "reply"
-    TYPE_CHOICES = [(REPLY, "Reply")]
+    AWARD = "award"
+    FOLLOW = "follow"
+    TYPE_CHOICES = [
+        (REPLY, "Reply"),
+        (AWARD, "Award"),
+        (FOLLOW, "Follow"),
+    ]
 
     user = models.ForeignKey(
         "accounts.User",
@@ -73,8 +79,27 @@ class Notification(models.Model):
         null=True,
         blank=True
     )
+    post = models.ForeignKey(
+        "posts.Post",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    actor = models.ForeignKey(
+        "accounts.User",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="sent_notifications"
+    )
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Notification for {self.user} - {self.type}"
 
     class Meta:
         ordering = ["-created_at"]
@@ -94,3 +119,21 @@ class EmailVerification(models.Model):
     def __str__(self):
         return f"Token for {self.user.username}"
     
+class Follow(models.Model):
+    follower = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="following"
+    )
+    followed=models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="followers"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "followed")
+
+    def __str__(self):
+        return f"{self.follower} follows {self.followed}"

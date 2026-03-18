@@ -22,3 +22,13 @@ class CommentForm(forms.ModelForm):
             raise forms.ValidationError("Yorum çok kısa.")
         return body
 
+
+class PostEditForm(forms.ModelForm):
+    class Meta:
+        model=Post
+        fields=['title','body','url']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'body': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
+            'url': forms.TextInput(attrs={'class': 'form-control'}),
+        }

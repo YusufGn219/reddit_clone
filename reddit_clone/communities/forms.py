@@ -31,4 +31,5 @@ class CommunityCreateForm(forms.ModelForm):
 class CommunityEditForm(forms.ModelForm):
     class Meta:
         model = Community
-        fields = ["title", "description"]
+        fields = ["title", "description", "banner"]
+
