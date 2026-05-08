@@ -1,106 +1,76 @@
-﻿# Reddit Clone
+# 🔴 Reddit Clone
 
-Django kullanarak, reddit platformunun temel özelliklerini barındıran bir web uygulamasıdır.
+A full-stack social platform built with Django, replicating 
+the core features of Reddit.
 
-## Özellikler
+## 📌 Overview
 
+A social platform featuring community creation, post/comment system, 
+voting, user following, notifications and moderator tools.
+Built with a sprint-based development approach.
 
-- Gönderi, Topluluk oluşturma ve görüntüleme
-- Topluluk oluşturma ve katılma
-- Kullanıcı kaydı ve girişi
-- Kullanıcı profilleri
-- Beğeni ve beğenmeme
-- Oylama sistemi
-- Yorum yapma
-- Arama
+## ✅ Completed Features
 
-## Kurulum
- 
-### Gereksinimler
+- 👤 User system — registration, login, profile, following, email verification
+- 🏘️ Communities — creation, membership, moderator management, banner upload
+- 📝 Post system — create, edit, delete, search
+- 🗨️ Nested comment system — recursive render
+- 👍 AJAX voting — upvote/downvote without page reload
+- 🔔 Notification system — comment, follow, award notifications
+- 🔒 Security — django-ratelimit, password reset, user enumeration protection
+- 🧪 Test coverage — unit, integration, permission tests
 
-- Python 3.10+
-- pip
+## 🔄 In Progress
 
-### Çalıştırma adımları
+Saved Posts, Community Rules, User Karma, Direct Messages
 
-1. Repoyu klonlayın:
+## 🚀 Installation
+
+**Requirements:** Python 3.10+, pip
+
 ```bash
-git clone https://github.com/YusufGn219/reddit-clone.git
-cd reddit-clone
-```
+# 1. Clone the repository
+git clone https://github.com/YusufGn219/reddit_clone.git
+cd reddit_clone
 
-2. Sanal ortam oluşturun:
-```bash
+# 2. Create virtual environment
 python -m venv venv
 Set-ExecutionPolicy Unrestricted -Scope Process
-cd reddit_clone
- .\venv\Scripts\activate
-```
+.\venv\Scripts\activate
 
-3. Gerekli paketleri yükleyin:
-```bash
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-4. .env dosyasını oluşturun:
-```bash
+# 4. Create .env file
 cp .env.example .env
-```
 
-5. Veritabanını oluşturun:
-```bash
+# 5. Run migrations
 python manage.py migrate
-```
 
-5. Geliştirme sunucusunu başlatın:
-```bash
+# 6. Start the server
 python manage.py runserver
 ```
 
-6. Tarayıcınızda http://localhost:8000 adresine gidin.
+Go to http://localhost:8000 in your browser.
 
-## Modüllerin Görevleri
+## 📁 Project Structure
 
-Her klasör belirli bir sorumluluk alanına odaklanır ve projenin bakımını, geliştirilmesini ve ölçeklenmesini kolaylaştırır.
+| Module | Description |
+|--------|-------------|
+| `accounts/` | Authentication, registration, login, profile, following |
+| `communities/` | Community creation, moderation, membership management |
+| `posts/` | Post and comment system, service logic, template tags |
+| `votes/` | Upvote/downvote logic |
+| `config/` | URL routing, environment-based settings |
+| `templates/` | HTML templates for all apps |
+| `static/` | CSS and frontend assets |
 
-### accounts/
-Kullanıcı kimlik doğrulama, kayıt, giriş, profil ve kullanıcıya bağlı yardımcı işlemleri içerir.
+## 🛠️ Tech Stack
 
-### communities/
-Topluluk oluşturma, düzenleme, moderasyon işlemleri, topluluk kuralları ve topluluğa özgü yetki kontrollerini yönetir.
-
-### config/
-Projenin merkezi yapılandırma katmanıdır.  
-URL yönlendirmeleri, WSGI/ASGI giriş noktaları ve ortam bazlı ayarlar burada bulunur.
-
-### posts/
-Gönderi ve yorum odaklı ana içerik katmanıdır.  
-Ayrıca servis mantıkları (services/) ve özel template tag yapıları da bu modül altında yer alır.
-
-### static/
-Projenin ortak statik dosyalarını barındırır.  
-CSS gibi arayüz varlıkları bu klasörde tutulur.
-
-### templates/
-Tüm uygulamalar tarafından kullanılan HTML şablonlarını içerir.  
-Sayfa yapısı, ortak layout'lar ve uygulamaya özel template dosyaları burada yer alır.
-
-### votes/
-Gönderi ve yorumlar üzerindeki oy verme / oy geri çekme mantığını yönetir.
-
-### manage.py
-Django komutlarının çalıştırıldığı ana giriş dosyasıdır.
-
-### requirements.txt
-Projede kullanılan Python bağımlılıklarını listeler.
-
-
-## Projede kullanılan teknolojiler
-
-- Django
-- HTML
-- CSS
-- JavaScript
-- Bootstrap
-- SQLite
-
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=flat&logo=bootstrap&logoColor=white)
